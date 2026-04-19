@@ -12,6 +12,7 @@ import { DemoFrame } from './demos/DemoFrame';
 import { FunctionFittingDemo } from './demos/FunctionFittingDemo';
 import { MoeMetricsDemo } from './demos/MoeMetricsDemo';
 import { NeuralNetworkFlowDemo } from './demos/NeuralNetworkFlowDemo';
+import { TechnicalEvolutionLabs } from './TechnicalEvolutionLabs';
 
 const modeLabels: Record<TimelineSpacingMode, string> = {
   equal: '大事件等间隔',
@@ -24,6 +25,46 @@ const modeDescriptions: Record<TimelineSpacingMode, string> = {
 };
 
 type TimelineEventId = (typeof modelEvolutionTimeline)[number]['id'];
+
+const historyTalkById: Partial<
+  Record<TimelineEventId, { science: string; plain: string; transition: string }>
+> = {
+  'mcculloch-pitts': {
+    science: '它把神经元抽象成二值阈值函数，说明逻辑命题可以被网络化表达。',
+    plain: '可以把它理解成一个会做开关判断的小门：信号够强就开，不够强就关。',
+    transition: '过渡句：能用公式表达逻辑之后，下一步自然是问机器行为能否被观察和检验。',
+  },
+  perceptron: {
+    science: '感知机在阈值模型上加入可学习权重，用错分样本推动决策边界移动。',
+    plain: '它不是每次都照着手写规则判断，而是答错后改一下自己的打分标准。',
+    transition: '过渡句：单个可学习神经元很重要，但它只能画线，复杂问题需要多层结构。',
+  },
+  backpropagation: {
+    science: '反向传播用链式法则计算损失对每层参数的梯度，使多层网络训练变得可操作。',
+    plain: '像把最后的错题分数一层层追责回去，让每一层都知道自己该往哪儿改。',
+    transition: '过渡句：当多层网络能训练后，问题从能不能学，变成什么结构最适合什么数据。',
+  },
+  transformer: {
+    science: 'Transformer 用自注意力建立 token 之间的直接依赖，缩短长距离信号路径并提升并行训练效率。',
+    plain: '它不再让信息排队一个个传，而是让句子里的词彼此直接“看见”相关线索。',
+    transition: '过渡句：有了可扩展架构，大规模预训练就能把结构优势转成通用语言能力。',
+  },
+  'gpt-5': {
+    science: '这一节点强调前沿模型从单纯扩参转向能力整合、路由效率和系统可控性的共同优化。',
+    plain: '模型不只是更大，还要更会分配计算、更稳定地被产品和工程系统调用。',
+    transition: '过渡句：历史讲到这里，就可以切入稠密计算和专家路由的技术取舍。',
+  },
+};
+
+function getHistoryTalk(event: (typeof modelEvolutionTimeline)[number]) {
+  return (
+    historyTalkById[event.id] ?? {
+      science: `${event.title}的关键意义是：${event.solvedProblem}`,
+      plain: `通俗讲，它把上一阶段的局限往前推进了一步：${event.limitation}`,
+      transition: `过渡句：${event.nextTransition}`,
+    }
+  );
+}
 
 function FoundationDemo({ activeEventId }: { activeEventId: TimelineEventId }) {
   const isTuring = activeEventId === 'turing-test';
@@ -156,9 +197,11 @@ export function ModelEvolutionLab() {
   const [mode, setMode] = useState<TimelineSpacingMode>('equal');
   const [activeId, setActiveId] = useState(modelEvolutionTimeline[0].id);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isHistoryTalkOpen, setIsHistoryTalkOpen] = useState(false);
   const items = useMemo(() => getTimelineItems(mode), [mode]);
   const active = items.find((item) => item.id === activeId) ?? items[0];
   const demo = modelEvolutionDemos.find((item) => item.key === active.demoKey);
+  const historyTalk = getHistoryTalk(active);
 
   return (
     <div className="grid gap-5" data-testid="model-evolution-lab">
@@ -168,7 +211,7 @@ export function ModelEvolutionLab() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-signal">第 01 章实验台</p>
             <h3 className="mt-2 text-2xl font-semibold text-white">模型发展互动实验台</h3>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-300">
-              左侧按历史节点推进，右侧切换相互独立的可视化模块，用 15-20 分钟讲清楚模型能力为什么会在近期集中爆发。
+              先按时间线从历史角度介绍重要事件，再进入专题实验卡，从实际技术演进视角讲清具体机制。
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -188,6 +231,38 @@ export function ModelEvolutionLab() {
           {modeDescriptions[mode]}
         </p>
       </div>
+
+      <section className="rounded border border-line bg-white/[0.035] p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-signal">第一段</p>
+            <h3 className="mt-2 text-2xl font-semibold text-white">第一段：时间线</h3>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-300">
+              这一段只讲历史脉络：发生了什么、解决了什么时代问题、留下什么局限，以及为什么进入下一阶段。
+            </p>
+          </div>
+          <button type="button" className="control-button" onClick={() => setIsHistoryTalkOpen((current) => !current)}>
+            {isHistoryTalkOpen ? '收起历史讲述' : '展开历史讲述'}
+          </button>
+        </div>
+
+        {isHistoryTalkOpen ? (
+          <div className="mt-4 grid gap-3 lg:grid-cols-3">
+            <div className="rounded border border-line bg-black/20 p-4 text-sm leading-6 text-zinc-300">
+              <div className="font-semibold text-white">历史讲述提案</div>
+              <p className="mt-2">{historyTalk.science}</p>
+            </div>
+            <div className="rounded border border-line bg-black/20 p-4 text-sm leading-6 text-zinc-300">
+              <div className="font-semibold text-white">通俗解释</div>
+              <p className="mt-2">{historyTalk.plain}</p>
+            </div>
+            <div className="rounded border border-line bg-black/20 p-4 text-sm leading-6 text-zinc-300">
+              <div className="font-semibold text-white">过渡句</div>
+              <p className="mt-2">{historyTalk.transition}</p>
+            </div>
+          </div>
+        ) : null}
+      </section>
 
       <div className="grid gap-5 xl:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="rounded border border-line bg-white/[0.035] p-4">
@@ -301,6 +376,8 @@ export function ModelEvolutionLab() {
           </div>
         </div>
       ) : null}
+
+      <TechnicalEvolutionLabs />
     </div>
   );
 }
