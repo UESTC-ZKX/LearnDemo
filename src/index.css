@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #08090b;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    linear-gradient(180deg, rgba(61, 214, 198, 0.07), transparent 36rem),
+    #08090b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@layer components {
+  .sidebar {
+    @apply fixed left-0 top-0 z-20 hidden h-screen w-72 border-r border-line bg-ink/95 px-6 py-8 shadow-projection lg:block;
+  }
+
+  .content-shell {
+    @apply mx-auto max-w-7xl px-5 py-8 lg:ml-72 lg:px-12 lg:py-10;
+  }
+
+  .hero-section {
+    @apply mb-10 min-h-[48vh] border-b border-line pb-10 pt-8 lg:pt-16;
+  }
+
+  .chapter-section {
+    @apply rounded border border-line bg-panel/70 p-6 shadow-projection lg:p-8;
+  }
+
+  .stage-card {
+    @apply grid gap-6 rounded border border-line bg-white/[0.035] p-5 lg:grid-cols-[1fr_22rem] lg:p-6;
+  }
+
+  .demo-surface {
+    @apply min-h-44 rounded border border-line bg-ink/70 p-5;
+  }
+
+  .demo-frame {
+    @apply min-h-[28rem] rounded border border-line bg-ink/80 p-5 shadow-projection;
+  }
+
+  .demo-button {
+    @apply rounded border border-line bg-white/[0.035] px-3 py-2 text-left text-sm text-zinc-300 transition hover:border-signal/60 hover:text-white;
+  }
+
+  .demo-button-active {
+    @apply border-signal/70 bg-signal/10 text-white;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 rounded px-3 py-3 text-sm font-medium text-zinc-400 transition hover:bg-white/[0.04] hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply bg-white/[0.07] text-white ring-1 ring-signal/50;
+  }
+
+  .presentation-controls {
+    @apply fixed bottom-4 right-4 z-30 flex items-center gap-3 rounded border border-line bg-ink/90 px-3 py-2 shadow-projection backdrop-blur;
+  }
+
+  .control-button {
+    @apply rounded border border-signal/50 bg-signal/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-signal/20;
+  }
+
+  .final-section {
+    @apply rounded border border-line bg-panel/70 p-6 shadow-projection lg:p-8;
+  }
+
+  .presentation-mode .content-shell {
+    @apply max-w-[96rem] lg:ml-0 lg:px-20;
+  }
+
+  .presentation-mode .sidebar {
+    @apply hidden;
+  }
+
+  .presentation-mode .hero-section {
+    @apply min-h-[72vh];
+  }
+
+  .presentation-mode .stage-card {
+    @apply lg:grid-cols-[1fr_28rem];
+  }
+}
+
+@media (max-width: 1023px) {
+  .content-shell {
+    padding-top: 1.5rem;
+  }
+
+  .hero-section {
+    min-height: auto;
+  }
+}
