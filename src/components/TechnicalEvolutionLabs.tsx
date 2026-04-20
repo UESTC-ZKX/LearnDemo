@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MoeMetricsDemo } from './demos/MoeMetricsDemo';
+import { buildBackpropDemoUrl, buildPerceptronDemoUrl } from '../utils/perceptronDemoMode';
 
 type LabId =
   | 'neuron-perceptron'
@@ -87,6 +88,84 @@ const transformerBlocks = [
   ['Linear + Softmax', '得到下一个 token 概率'],
 ];
 
+function PerceptronMiniPlane() {
+  const minCoordinate = -2.8;
+  const maxCoordinate = 2.8;
+
+  function mapX(value: number) {
+    return 24 + ((value - minCoordinate) / (maxCoordinate - minCoordinate)) * 232;
+  }
+
+  function mapY(value: number) {
+    return 256 - 24 - ((value - minCoordinate) / (maxCoordinate - minCoordinate)) * 232;
+  }
+
+  return (
+    <svg className="mt-4 w-full rounded-2xl border border-line bg-zinc-950/70 p-3" viewBox="0 0 280 280" aria-label="感知机二维平面示意图">
+      <rect fill="rgba(255,255,255,0.02)" height="280" rx="20" width="280" />
+      {[0, 1, 2, 3, 4].map((index) => {
+        const offset = 24 + index * 58;
+        return (
+          <g key={index}>
+            <line
+              stroke="rgba(255,255,255,0.08)"
+              strokeDasharray="4 8"
+              strokeWidth="1"
+              x1={offset}
+              x2={offset}
+              y1="24"
+              y2="256"
+            />
+            <line
+              stroke="rgba(255,255,255,0.08)"
+              strokeDasharray="4 8"
+              strokeWidth="1"
+              x1="24"
+              x2="256"
+              y1={offset}
+              y2={offset}
+            />
+          </g>
+        );
+      })}
+
+      <line stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" x1="24" x2="256" y1={mapY(0)} y2={mapY(0)} />
+      <line stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" x1={mapX(0)} x2={mapX(0)} y1="24" y2="256" />
+      <path d={`M ${mapX(-2.4)} ${mapY(-0.6)} L ${mapX(2.4)} ${mapY(0.8)}`} fill="none" stroke="#ffffff" strokeWidth="3" />
+
+      {perceptronSamples.map((sample) => (
+        <g key={sample.name}>
+          <circle
+            cx={mapX(sample.x1)}
+            cy={mapY(sample.x2)}
+            fill={sample.label === '+1' ? '#3dd6c6' : '#f59e0b'}
+            r="12"
+            stroke="rgba(8,9,11,0.9)"
+            strokeWidth="2"
+          />
+          <text
+            fill="#ffffff"
+            fontSize="11"
+            fontWeight="700"
+            textAnchor="middle"
+            x={mapX(sample.x1)}
+            y={mapY(sample.x2) + 4}
+          >
+            {sample.name.split(' ')[1]}
+          </text>
+        </g>
+      ))}
+
+      <text fill="rgba(255,255,255,0.54)" fontSize="12" x="260" y={mapY(0) + 4}>
+        x1
+      </text>
+      <text fill="rgba(255,255,255,0.54)" fontSize="12" x={mapX(0) - 5} y="18">
+        x2
+      </text>
+    </svg>
+  );
+}
+
 function NeuronPerceptronLab() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -116,16 +195,26 @@ function NeuronPerceptronLab() {
 }
 
 function PerceptronClassificationLab() {
+  const [isPopupBlocked, setIsPopupBlocked] = useState(false);
+
+  function handleOpenDemo() {
+    const nextWindow = window.open(buildPerceptronDemoUrl(window.location), '_blank', 'noopener,noreferrer');
+    setIsPopupBlocked(nextWindow === null);
+  }
+
   return (
     <div data-testid="perceptron-classification-lab" className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="rounded border border-line bg-black/20 p-4">
-        <h4 className="text-base font-semibold text-white">二维分类样本</h4>
-        <p className="mt-2 text-sm leading-6 text-zinc-300">目标：学出一条直线，把正样本和负样本分开。</p>
+        <h4 className="text-base font-semibold text-white">二维平面分类</h4>
+        <p className="mt-2 text-sm leading-6 text-zinc-300">
+          先把样本点放到平面上看。感知机做的事并不神秘，本质就是学一条直线，把正负样本推到边界两侧。
+        </p>
+        <PerceptronMiniPlane />
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           {perceptronSamples.map((sample) => (
             <div key={sample.name} className="rounded border border-line bg-zinc-950/70 p-3 text-sm leading-6 text-zinc-300">
               <div className="font-semibold text-white">{sample.name}</div>
-              <div>输入：({sample.x1}, {sample.x2})</div>
+              <div>坐标：({sample.x1}, {sample.x2})</div>
               <div>目标：{sample.label}，预测：{sample.prediction}</div>
               <div className="text-signal">更新：{sample.update}</div>
             </div>
@@ -133,7 +222,7 @@ function PerceptronClassificationLab() {
         </div>
       </div>
       <div className="rounded border border-line bg-black/20 p-4">
-        <h4 className="text-base font-semibold text-white">梯度下降怎么落地</h4>
+        <h4 className="text-base font-semibold text-white">从一条线讲到 XOR</h4>
         <p className="mt-2 text-sm leading-6 text-zinc-300">
           感知机的经典更新可看作错分样本推动决策边界移动：预测错了，就沿着让目标类别得分变高的方向修正权重。
         </p>
@@ -151,27 +240,87 @@ function PerceptronClassificationLab() {
         <p className="mt-3 text-sm leading-6 text-zinc-400">
           “拟合”是算法层面在调参数，“感知机”是建模层面的一个具体可学习分类器。
         </p>
+        <div className="mt-4 rounded border border-amber/50 bg-amber/10 p-4 text-sm leading-6 text-zinc-200">
+          XOR 是单层感知机的经典能力边界。因为它只能形成一条线性边界，所以无论怎么训练，都不可能把对角线上同类的点同时分开。
+        </div>
+        <button
+          data-testid="open-perceptron-demo"
+          type="button"
+          className="mt-4 rounded border border-signal/60 bg-signal/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-signal/20"
+          onClick={handleOpenDemo}
+        >
+          打开完整 Demo
+        </button>
+        {isPopupBlocked ? (
+          <p className="mt-3 text-sm leading-6 text-amber">
+            浏览器阻止了新窗口，请允许弹窗后再次点击。
+          </p>
+        ) : null}
       </div>
     </div>
   );
 }
 
 function MultilayerBackpropLab() {
+  const [isPopupBlocked, setIsPopupBlocked] = useState(false);
+
+  function handleOpenBackpropDemo() {
+    const nextWindow = window.open(buildBackpropDemoUrl(window.location), '_blank', 'noopener,noreferrer');
+    setIsPopupBlocked(nextWindow === null);
+  }
+
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      {[
-        ['单层', '只能形成一条线性决策边界，遇到 XOR 这类线性不可分问题会失败。'],
-        ['多层', '隐藏层可以组合特征，表达曲线、区域和更复杂的模式。'],
-        ['反向传播', '用链式法则把损失对每个参数的影响算出来，再逐层更新。'],
-      ].map(([title, body], index) => (
-        <div key={title} className="rounded border border-line bg-black/20 p-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded border border-signal/60 bg-signal/10 text-sm font-semibold text-white">
-            {index + 1}
-          </div>
-          <h4 className="mt-3 text-base font-semibold text-white">{title}</h4>
-          <p className="mt-2 text-sm leading-6 text-zinc-300">{body}</p>
+    <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="rounded border border-line bg-black/20 p-4">
+        <h4 className="text-base font-semibold text-white">前向、损失、反向、更新</h4>
+        <p className="mt-2 text-sm leading-6 text-zinc-300">
+          多层网络真正难的不是“加层”，而是怎么把输出端的损失拆回到每一层参数上。反向传播就是把这条因果链算清楚。
+        </p>
+        <svg className="mt-4 w-full rounded-2xl border border-line bg-zinc-950/70 p-3" viewBox="0 0 320 180" aria-label="反向传播轻讲解示意图">
+          <rect width="320" height="180" rx="18" fill="rgba(255,255,255,0.02)" />
+          <line x1="72" y1="72" x2="160" y2="88" stroke="rgba(61,214,198,0.85)" strokeWidth="3" />
+          <line x1="72" y1="124" x2="160" y2="102" stroke="rgba(61,214,198,0.85)" strokeWidth="3" />
+          <line x1="160" y1="88" x2="248" y2="96" stroke="rgba(245,158,11,0.9)" strokeWidth="3" />
+          <line x1="160" y1="102" x2="248" y2="96" stroke="rgba(245,158,11,0.9)" strokeWidth="3" />
+          {[['x1', 56, 72], ['x2', 56, 124], ['h1', 160, 88], ['h2', 160, 102], ['y', 264, 96]].map(([label, x, y]) => (
+            <g key={label}>
+              <circle cx={x} cy={y} r="16" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.42)" strokeWidth="2" />
+              <text x={x} y={Number(y) + 4} textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="700">
+                {label}
+              </text>
+            </g>
+          ))}
+          <text x="22" y="32" fill="rgba(255,255,255,0.52)" fontSize="11">前向算预测</text>
+          <text x="214" y="32" fill="rgba(255,255,255,0.52)" fontSize="11">loss 反向拆梯度</text>
+        </svg>
+      </div>
+
+      <div className="rounded border border-line bg-black/20 p-4">
+        <h4 className="text-base font-semibold text-white">把误差拆回每一层</h4>
+        <div className="mt-4 grid gap-3">
+          {[
+            ['前向传播', '先算出隐藏层激活值、输出值和当前损失。'],
+            ['链式法则', '从输出端开始，逐层乘上上游误差和本层局部导数。'],
+            ['参数更新', '用梯度修正权重和偏置，让下一次预测更接近目标。'],
+          ].map(([title, body]) => (
+            <div key={title} className="rounded border border-line bg-zinc-950/70 p-3 text-sm leading-6 text-zinc-300">
+              <span className="font-semibold text-white">{title}：</span>
+              {body}
+            </div>
+          ))}
         </div>
-      ))}
+        <button
+          data-testid="open-backprop-demo"
+          type="button"
+          className="mt-4 rounded border border-amber/60 bg-amber/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber/20"
+          onClick={handleOpenBackpropDemo}
+        >
+          打开完整 Demo
+        </button>
+        {isPopupBlocked ? (
+          <p className="mt-3 text-sm leading-6 text-amber">浏览器阻止了新窗口，请允许弹窗后再次点击。</p>
+        ) : null}
+      </div>
     </div>
   );
 }
