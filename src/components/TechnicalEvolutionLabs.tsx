@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MoeMetricsDemo } from './demos/MoeMetricsDemo';
-import { buildBackpropDemoUrl, buildPerceptronDemoUrl } from '../utils/perceptronDemoMode';
+import { buildBackpropDemoUrl, buildPerceptronDemoUrl, buildTransformerDemoUrl } from '../utils/perceptronDemoMode';
 
 type LabId =
   | 'neuron-perceptron'
@@ -385,8 +385,36 @@ function TokenGenerationLab() {
 }
 
 function TransformerArchitectureLab() {
+  const [isPopupBlocked, setIsPopupBlocked] = useState(false);
+
+  function handleOpenTransformerDemo() {
+    const nextWindow = window.open(buildTransformerDemoUrl(window.location), '_blank', 'noopener,noreferrer');
+    setIsPopupBlocked(nextWindow === null);
+  }
+
   return (
     <div data-testid="transformer-architecture-lab" className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="rounded border border-signal/60 bg-signal/10 p-4 lg:col-span-2">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h4 className="text-base font-semibold text-white">Transformer 完整教学页</h4>
+            <p className="mt-2 text-sm leading-6 text-zinc-300">
+              从经典 Encoder-Decoder 架构图开始，拆解模块职责，最后演示 I love AI 到 我爱人工智能 的翻译全链路。
+            </p>
+          </div>
+          <button
+            data-testid="open-transformer-demo"
+            type="button"
+            className="rounded border border-signal/60 bg-signal/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-signal/20"
+            onClick={handleOpenTransformerDemo}
+          >
+            打开完整 Demo
+          </button>
+        </div>
+        {isPopupBlocked ? (
+          <p className="mt-3 text-sm leading-6 text-amber">浏览器阻止了新窗口，请允许弹窗后再次点击。</p>
+        ) : null}
+      </div>
       <div className="rounded border border-line bg-black/20 p-4">
         <h4 className="text-base font-semibold text-white">Transformer 架构教学重绘</h4>
         <div className="mt-4 grid gap-3 md:grid-cols-2">

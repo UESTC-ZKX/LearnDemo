@@ -27,4 +27,16 @@ describe('TechnicalEvolutionLabs', () => {
     expect(openSpy.mock.calls[0]?.[0]).toContain('?demo=backprop');
     expect(openSpy.mock.calls[0]?.[1]).toBe('_blank');
   });
+
+  it('opens the standalone transformer demo in a new window', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    render(<TechnicalEvolutionLabs />);
+
+    await userEvent.click(screen.getByRole('button', { name: /Transformer/ }));
+    await userEvent.click(screen.getByTestId('open-transformer-demo'));
+
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    expect(openSpy.mock.calls[0]?.[0]).toContain('?demo=transformer');
+    expect(openSpy.mock.calls[0]?.[1]).toBe('_blank');
+  });
 });
