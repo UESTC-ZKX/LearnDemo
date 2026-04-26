@@ -41,7 +41,7 @@ export function BackpropMetricsPanel(props: BackpropMetricsPanelProps) {
 
       <section className="rounded-[2rem] border border-line bg-black/20 p-6 shadow-projection">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">训练日志</p>
-        <div className="mt-4 space-y-3">
+        <div data-testid="backprop-log-list" className="mt-4 max-h-72 space-y-3 overflow-y-auto pr-2">
           {logs.map((line) => (
             <div key={line} className="rounded-2xl border border-line bg-zinc-950/70 px-4 py-3 text-sm leading-7 text-zinc-300">
               {line}

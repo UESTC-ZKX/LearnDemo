@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { BackpropControlPanel, BackpropTeachingMode } from './BackpropControlPanel';
+import { BackpropChainRuleCard, BackpropFunctionPanel } from './BackpropFunctionPanel';
 import { BackpropMetricsPanel } from './BackpropMetricsPanel';
 import { BackpropNetworkCanvas } from './BackpropNetworkCanvas';
 import { BackpropTimelinePanel } from './BackpropTimelinePanel';
@@ -7,8 +8,11 @@ import {
   analyzeBackpropSample,
   BackpropNetworkPreset,
   createBackpropDataset,
+  createBackpropFunctionCurve,
   createBackpropNetworkState,
   getAverageBackpropLoss,
+  getBackpropFunctionInsight,
+  getBackpropLossSeries,
   trainBackpropEpoch,
 } from './backpropDemoModel';
 
@@ -24,13 +28,22 @@ export function BackpropDemoPage() {
   const [sampleCursor, setSampleCursor] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
   const [epoch, setEpoch] = useState(0);
-  const [logs, setLogs] = useState<string[]>(['等待开始：先观察当前网络，再逐步推动一次 backprop。']);
-  const [history, setHistory] = useState<number[]>([getAverageBackpropLoss(createBackpropDataset(), createBackpropNetworkState('small'))]);
   const dataset = useMemo(() => createBackpropDataset(), []);
+  const [logs, setLogs] = useState<string[]>(['等待开始：先看清楚网络结构，再一步步推动一次 backprop。']);
+  const [history, setHistory] = useState<number[]>([getAverageBackpropLoss(dataset, createBackpropNetworkState('small'))]);
+  const functionCurve = useMemo(() => createBackpropFunctionCurve(), []);
   const activeSample = dataset[sampleCursor];
   const analysis = useMemo(
     () => analyzeBackpropSample(activeSample, networkState, learningRate),
     [activeSample, learningRate, networkState],
+  );
+  const lossSeries = useMemo(
+    () => getBackpropLossSeries(mode, activeSample, networkState, analysis, history, learningRate),
+    [mode, activeSample, networkState, analysis, history, learningRate],
+  );
+  const functionInsight = useMemo(
+    () => getBackpropFunctionInsight(activeSample, analysis, lossSeries),
+    [activeSample, analysis, lossSeries],
   );
 
   const stepDemo = useEffectEvent(() => {
@@ -38,7 +51,7 @@ export function BackpropDemoPage() {
       setStepIndex((currentStep) => {
         if (currentStep < SAMPLE_STEP_LABELS.length) {
           const nextStep = currentStep + 1;
-          appendLog(buildSampleLog(nextStep, sampleCursor, analysis));
+          appendLog(buildSampleLog(nextStep, sampleCursor, analysis, dataset.length));
 
           if (nextStep === SAMPLE_STEP_LABELS.length) {
             setNetworkState(analysis.updatedState);
@@ -64,7 +77,7 @@ export function BackpropDemoPage() {
       const nextLoss = getAverageBackpropLoss(dataset, nextState);
       setEpoch((currentEpoch) => currentEpoch + 1);
       appendHistory(nextLoss);
-      appendLog(`第 ${epoch + 1} 轮训练完成 | loss = ${nextLoss.toFixed(4)} | 当前网络 ${preset === 'small' ? '2->2->1' : '2->3->1'}`);
+      appendLog(`第 ${epoch + 1} 轮训练完成：loss = ${nextLoss.toFixed(4)}，当前网络 ${preset === 'small' ? '2 -> 2 -> 1' : '2 -> 3 -> 1'}。`);
       return nextState;
     });
   });
@@ -92,8 +105,8 @@ export function BackpropDemoPage() {
     setEpoch(0);
     setLogs([
       nextMode === 'sample'
-        ? '等待开始：点击“单步执行”后，会按前向、loss、反向、更新的顺序展开。'
-        : '等待开始：点击“单步执行”后，会跑完整个 epoch，并记录 loss 趋势。',
+        ? '等待开始：点击“单步执行”后，会按前向传播、loss、反向传播、参数更新的顺序展开。'
+        : '等待开始：点击“单步执行”后，会跑完整个 epoch，并记录 loss 的下降趋势。',
     ]);
     setHistory([getAverageBackpropLoss(dataset, nextState)]);
   }
@@ -130,7 +143,7 @@ export function BackpropDemoPage() {
       ? stepIndex === 0
         ? '还没有开始拆解训练过程。先看一遍网络结构，再点击“单步执行”。'
         : `第 ${stepIndex} 步：${SAMPLE_STEP_LABELS[stepIndex - 1]}。`
-      : `第 ${epoch} 轮：看一整轮训练之后，loss 是否真的下降。`;
+      : `第 ${epoch} 轮：观察完整训练一轮之后，loss 是否真的在下降。`;
   const activeSampleLine = `${activeSample.id} | 输入 (${activeSample.inputs[0]}, ${activeSample.inputs[1]}) | 目标 ${activeSample.target}`;
   const lossLabel = `loss = ${analysis.loss.toFixed(4)} | output = ${analysis.output.toFixed(4)} | target = ${analysis.sample.target}`;
   const metricLines = [
@@ -152,62 +165,95 @@ export function BackpropDemoPage() {
           </p>
         </header>
 
-        <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="grid gap-6">
-            <BackpropControlPanel
-              autoRunning={autoRunning}
-              learningRate={learningRate}
-              mode={mode}
-              preset={preset}
-              speed={speed}
-              onLearningRateChange={setLearningRate}
-              onModeChange={handleModeChange}
-              onPause={() => setAutoRunning(false)}
-              onPresetChange={handlePresetChange}
-              onReset={() => resetDemo()}
-              onSpeedChange={setSpeed}
-              onStartAuto={() => setAutoRunning(true)}
-              onStep={stepDemo}
-            />
-            <BackpropNetworkCanvas analysis={analysis} mode={mode} preset={preset} stageIndex={stepIndex} state={networkState} />
-            <BackpropTimelinePanel
-              activeStepIndex={Math.max(0, stepIndex - 1)}
-              currentLabel={currentLabel}
-              history={history}
-              mode={mode}
-              stepLabels={SAMPLE_STEP_LABELS}
-            />
+        <section className="mt-6 grid gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500">先看网络内部</p>
+            <h2 className="mt-2 text-3xl font-semibold text-white">把一次反向传播拆成可讲解的 3 块</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-7 text-zinc-300">
+              第一眼只需要关注控制区、网络图和当前步骤。这样在讲课和投屏时，观众不会同时被函数图、损失图和链式法则图片分散注意力。
+            </p>
           </div>
 
-          <BackpropMetricsPanel
-            activeSampleLine={activeSampleLine}
-            currentStepLine={currentStepLine}
-            logs={logs}
-            lossLabel={lossLabel}
-            metricLines={metricLines}
-          />
+          <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr] xl:items-start">
+            <div className="grid gap-6">
+              <BackpropControlPanel
+                autoRunning={autoRunning}
+                learningRate={learningRate}
+                mode={mode}
+                preset={preset}
+                speed={speed}
+                onLearningRateChange={setLearningRate}
+                onModeChange={handleModeChange}
+                onPause={() => setAutoRunning(false)}
+                onPresetChange={handlePresetChange}
+                onReset={() => resetDemo()}
+                onSpeedChange={setSpeed}
+                onStartAuto={() => setAutoRunning(true)}
+                onStep={stepDemo}
+              />
+              <BackpropNetworkCanvas analysis={analysis} mode={mode} preset={preset} stageIndex={stepIndex} state={networkState} />
+            </div>
+
+            <div className="grid gap-6">
+              <BackpropMetricsPanel
+                activeSampleLine={activeSampleLine}
+                currentStepLine={currentStepLine}
+                logs={logs}
+                lossLabel={lossLabel}
+                metricLines={metricLines}
+              />
+              <BackpropTimelinePanel
+                activeStepIndex={Math.max(0, stepIndex - 1)}
+                currentLabel={currentLabel}
+                history={history}
+                mode={mode}
+                stepLabels={SAMPLE_STEP_LABELS}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 grid gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500">再看外部目标</p>
+            <h2 className="mt-2 text-3xl font-semibold text-white">最后再解释“为什么 loss 会往下走”</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-7 text-zinc-300">
+              当网络内部步骤已经看懂，再补目标函数和损失轨迹，观众会更容易把“参数更新”和“优化目标下降”对应起来。
+            </p>
+          </div>
+
+          <BackpropFunctionPanel history={lossSeries} insight={functionInsight} mode={mode} points={functionCurve} />
+        </section>
+
+        <section className="mt-8">
+          <BackpropChainRuleCard imageSrc="/backprop-chain-rule.png" />
         </section>
       </div>
     </main>
   );
 }
 
-function buildSampleLog(stepIndex: number, sampleCursor: number, analysis: ReturnType<typeof analyzeBackpropSample>) {
+function buildSampleLog(
+  stepIndex: number,
+  sampleCursor: number,
+  analysis: ReturnType<typeof analyzeBackpropSample>,
+  datasetSize: number,
+) {
   if (stepIndex === 1) {
-    return `第 1 步 | ${analysis.sample.id} 前向传播完成 | output = ${analysis.output.toFixed(4)}`;
+    return `第 1 步：${analysis.sample.id} 完成前向传播，output = ${analysis.output.toFixed(4)}。`;
   }
 
   if (stepIndex === 2) {
-    return `第 2 步 | ${analysis.sample.id} 计算 loss = ${analysis.loss.toFixed(4)}`;
+    return `第 2 步：${analysis.sample.id} 计算 loss = ${analysis.loss.toFixed(4)}。`;
   }
 
   if (stepIndex === 3) {
-    return `第 3 步 | ${analysis.sample.id} 输出层梯度 = ${analysis.outputGradient.toFixed(4)}`;
+    return `第 3 步：${analysis.sample.id} 输出层梯度 = ${analysis.outputGradient.toFixed(4)}。`;
   }
 
   if (stepIndex === 4) {
-    return `第 4 步 | ${analysis.sample.id} 隐藏层梯度 = ${analysis.hiddenGradients.map((value) => value.toFixed(4)).join(' / ')}`;
+    return `第 4 步：${analysis.sample.id} 隐藏层梯度 = ${analysis.hiddenGradients.map((value) => value.toFixed(4)).join(' / ')}。`;
   }
 
-  return `第 5 步 | ${analysis.sample.id} 参数更新完成 | 下一样本索引 = ${(sampleCursor + 1) % 4}`;
+  return `第 5 步：${analysis.sample.id} 参数更新完成，下一样本索引 = ${(sampleCursor + 1) % datasetSize}。`;
 }
