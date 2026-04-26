@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildAgentEvolutionDemoUrl,
   buildBackpropDemoUrl,
   buildPerceptronDemoUrl,
   buildTransformerDemoUrl,
@@ -21,6 +22,10 @@ describe('perceptronDemoMode', () => {
 
   it('returns transformer demo mode when the query string requests it', () => {
     expect(getPerceptronDemoMode('?demo=transformer')).toBe('transformer-demo');
+  });
+
+  it('returns agent evolution demo mode when the query string requests it', () => {
+    expect(getPerceptronDemoMode('?demo=agent-evolution')).toBe('agent-evolution-demo');
   });
 
   it('builds a standalone demo url on the current page', () => {
@@ -48,5 +53,14 @@ describe('perceptronDemoMode', () => {
         pathname: '/index.html',
       }),
     ).toBe('http://localhost:5173/index.html?demo=transformer');
+  });
+
+  it('builds a standalone agent evolution demo url on the current page', () => {
+    expect(
+      buildAgentEvolutionDemoUrl({
+        origin: 'http://localhost:5173',
+        pathname: '/index.html',
+      }),
+    ).toBe('http://localhost:5173/index.html?demo=agent-evolution');
   });
 });

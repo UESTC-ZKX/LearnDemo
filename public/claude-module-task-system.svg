@@ -1,0 +1,34 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="32" fill="#08111E"/>
+  <rect x="40" y="40" width="1120" height="680" rx="28" fill="#0E1A2D" stroke="#2F4D77"/>
+  <text x="70" y="98" fill="#E6F0FF" font-size="42" font-family="Arial" font-weight="700">Task / Subagent / Multi-Agent System</text>
+  <text x="70" y="135" fill="#FFBF7D" font-size="22" font-family="Arial">From assistant loop to coordinated task system</text>
+  <rect x="70" y="180" width="220" height="280" rx="20" fill="#163A63" stroke="#60A5FA"/>
+  <text x="102" y="222" fill="#F4F9FF" font-size="26" font-family="Arial" font-weight="700">Main Agent</text>
+  <text x="102" y="270" fill="#D4E8FF" font-size="20" font-family="Arial">Receive request</text>
+  <text x="102" y="306" fill="#D4E8FF" font-size="20" font-family="Arial">Understand and plan</text>
+  <text x="102" y="342" fill="#D4E8FF" font-size="20" font-family="Arial">Create tasks</text>
+  <text x="102" y="378" fill="#D4E8FF" font-size="20" font-family="Arial">Merge results</text>
+  <rect x="348" y="160" width="340" height="180" rx="22" fill="#3E250F" stroke="#FB923C"/>
+  <text x="382" y="202" fill="#FFF7F2" font-size="26" font-family="Arial" font-weight="700">Task Scheduler / Coordinator</text>
+  <text x="382" y="250" fill="#FED7C7" font-size="20" font-family="Arial">Decompose tasks</text>
+  <text x="382" y="286" fill="#FED7C7" font-size="20" font-family="Arial">Manage priority and dependencies</text>
+  <text x="382" y="322" fill="#FED7C7" font-size="20" font-family="Arial">Retry, timeout, concurrency control</text>
+  <rect x="348" y="374" width="340" height="150" rx="22" fill="#4A2F10" stroke="#F59E0B"/>
+  <text x="382" y="416" fill="#FFF8E8" font-size="26" font-family="Arial" font-weight="700">Task Store / Status Tracking</text>
+  <text x="382" y="462" fill="#FCE8B2" font-size="20" font-family="Arial">Task metadata · artifacts · query indexes</text>
+  <rect x="740" y="160" width="340" height="364" rx="22" fill="#142C49" stroke="#50C5D3"/>
+  <text x="774" y="202" fill="#F7FBFF" font-size="26" font-family="Arial" font-weight="700">Execution Units</text>
+  <text x="774" y="248" fill="#D2EAF8" font-size="20" font-family="Arial">Shell task</text>
+  <text x="774" y="286" fill="#D2EAF8" font-size="20" font-family="Arial">Agent task</text>
+  <text x="774" y="324" fill="#D2EAF8" font-size="20" font-family="Arial">Workflow task</text>
+  <text x="774" y="362" fill="#D2EAF8" font-size="20" font-family="Arial">Remote task</text>
+  <text x="774" y="400" fill="#D2EAF8" font-size="20" font-family="Arial">Monitor task</text>
+  <text x="774" y="452" fill="#EAF2FF" font-size="20" font-family="Arial">Progress · transcript · result · error</text>
+  <path d="M290 260H348" stroke="#6EA1FF" stroke-width="4"/>
+  <path d="M688 260H740" stroke="#FB923C" stroke-width="4"/>
+  <path d="M688 450H740" stroke="#FB923C" stroke-width="4" stroke-dasharray="10 10"/>
+  <rect x="70" y="560" width="1010" height="120" rx="24" fill="#101E33" stroke="#6EA1FF"/>
+  <text x="102" y="602" fill="#F0F6FF" font-size="26" font-family="Arial" font-weight="700">Task State Machine</text>
+  <text x="102" y="646" fill="#D4E8FF" font-size="20" font-family="Arial">pending → running → blocked → completed / failed / cancelled, with retry back to pending</text>
+</svg>

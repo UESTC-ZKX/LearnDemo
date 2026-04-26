@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChapterSection } from './components/ChapterSection';
+import { claudeArchitectureModuleIds } from './components/ClaudeArchitectureChapterSection';
 import { FinalTakeaways } from './components/FinalTakeaways';
 import { PresentationControls } from './components/PresentationControls';
 import { Sidebar } from './components/Sidebar';
@@ -18,6 +19,8 @@ function App() {
       ...chapters.flatMap((chapter) =>
         chapter.id === 'chapter-models'
           ? [chapter.id]
+          : chapter.id === 'chapter-claude'
+            ? [chapter.id, ...claudeArchitectureModuleIds]
           : [chapter.id, ...chapter.stages.map((stage) => stage.id)],
       ),
       'final-takeaways',

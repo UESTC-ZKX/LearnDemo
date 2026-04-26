@@ -1,0 +1,28 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="32" fill="#08111E"/>
+  <rect x="40" y="40" width="1120" height="680" rx="28" fill="#0E1A2D" stroke="#2F4D77"/>
+  <text x="70" y="98" fill="#E6F0FF" font-size="42" font-family="Arial" font-weight="700">Extension Layer (Skills / Plugins / MCP)</text>
+  <text x="70" y="135" fill="#8EEA9D" font-size="22" font-family="Arial">External capabilities must map into shared abstractions</text>
+  <rect x="72" y="180" width="250" height="330" rx="22" fill="#163A2B" stroke="#4ADE80"/>
+  <text x="108" y="222" fill="#F4FFF6" font-size="26" font-family="Arial" font-weight="700">Extension Sources</text>
+  <text x="108" y="270" fill="#D8F8DF" font-size="20" font-family="Arial">Skills</text>
+  <text x="108" y="310" fill="#D8F8DF" font-size="20" font-family="Arial">Plugins</text>
+  <text x="108" y="350" fill="#D8F8DF" font-size="20" font-family="Arial">MCP / Protocols</text>
+  <rect x="362" y="150" width="430" height="360" rx="24" fill="#143451" stroke="#60A5FA"/>
+  <text x="394" y="192" fill="#F5FAFF" font-size="28" font-family="Arial" font-weight="700">Extension Adapter Layer</text>
+  <text x="394" y="244" fill="#D4E8FF" font-size="20" font-family="Arial">Skill loader → prompt command</text>
+  <text x="394" y="284" fill="#D4E8FF" font-size="20" font-family="Arial">Plugin loader → commands / tools / agents / hooks</text>
+  <text x="394" y="324" fill="#D4E8FF" font-size="20" font-family="Arial">Protocol adapter → remote tools / resources / prompts</text>
+  <rect x="834" y="180" width="260" height="330" rx="22" fill="#201C43" stroke="#A78BFA"/>
+  <text x="864" y="222" fill="#F6F2FF" font-size="26" font-family="Arial" font-weight="700">Runtime Integration</text>
+  <text x="864" y="270" fill="#E4D8FF" font-size="20" font-family="Arial">Command registry</text>
+  <text x="864" y="310" fill="#E4D8FF" font-size="20" font-family="Arial">Tool registry</text>
+  <text x="864" y="350" fill="#E4D8FF" font-size="20" font-family="Arial">Agent templates</text>
+  <text x="864" y="390" fill="#E4D8FF" font-size="20" font-family="Arial">Resource access</text>
+  <text x="864" y="430" fill="#E4D8FF" font-size="20" font-family="Arial">Hooks / lifecycle</text>
+  <path d="M322 342H362" stroke="#4ADE80" stroke-width="4"/>
+  <path d="M792 342H834" stroke="#60A5FA" stroke-width="4"/>
+  <rect x="72" y="560" width="1022" height="92" rx="22" fill="#3C2B10" stroke="#F59E0B"/>
+  <text x="112" y="605" fill="#FFF8E8" font-size="24" font-family="Arial" font-weight="700">Unified abstractions:</text>
+  <text x="370" y="605" fill="#FCE8B2" font-size="22" font-family="Arial">Command · Tool · Task · Prompt · Resource</text>
+</svg>

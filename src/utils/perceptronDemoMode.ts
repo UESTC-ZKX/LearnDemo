@@ -1,4 +1,4 @@
-export type AppMode = 'main' | 'perceptron-demo' | 'backprop-demo' | 'transformer-demo';
+export type AppMode = 'main' | 'perceptron-demo' | 'backprop-demo' | 'transformer-demo' | 'agent-evolution-demo';
 
 interface DemoLocationLike {
   origin: string;
@@ -20,6 +20,10 @@ export function getPerceptronDemoMode(search: string): AppMode {
     return 'transformer-demo';
   }
 
+  if (demoType === 'agent-evolution') {
+    return 'agent-evolution-demo';
+  }
+
   return 'main';
 }
 
@@ -33,4 +37,8 @@ export function buildBackpropDemoUrl(locationLike: DemoLocationLike): string {
 
 export function buildTransformerDemoUrl(locationLike: DemoLocationLike): string {
   return `${locationLike.origin}${locationLike.pathname}?demo=transformer`;
+}
+
+export function buildAgentEvolutionDemoUrl(locationLike: DemoLocationLike): string {
+  return `${locationLike.origin}${locationLike.pathname}?demo=agent-evolution`;
 }

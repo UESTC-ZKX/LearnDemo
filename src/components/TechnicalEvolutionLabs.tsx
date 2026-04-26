@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MoeMetricsDemo } from './demos/MoeMetricsDemo';
 import { buildBackpropDemoUrl, buildPerceptronDemoUrl, buildTransformerDemoUrl } from '../utils/perceptronDemoMode';
 
@@ -493,9 +493,19 @@ function renderLab(id: LabId) {
   return <DenseMoeLab />;
 }
 
-export function TechnicalEvolutionLabs() {
+interface TechnicalEvolutionLabsProps {
+  highlightedLabId?: string;
+}
+
+export function TechnicalEvolutionLabs({ highlightedLabId }: TechnicalEvolutionLabsProps) {
   const [activeId, setActiveId] = useState<LabId>('neuron-perceptron');
   const active = useMemo(() => labs.find((lab) => lab.id === activeId) ?? labs[0], [activeId]);
+
+  useEffect(() => {
+    if (highlightedLabId && labs.some((lab) => lab.id === highlightedLabId)) {
+      setActiveId(highlightedLabId as LabId);
+    }
+  }, [highlightedLabId]);
 
   return (
     <section className="rounded border border-line bg-white/[0.035] p-5">
@@ -515,6 +525,7 @@ export function TechnicalEvolutionLabs() {
           <button
             key={lab.id}
             type="button"
+            data-testid={`tech-lab-trigger-${lab.id}`}
             className={`rounded border p-4 text-left transition ${
               activeId === lab.id ? 'border-signal/70 bg-signal/10' : 'border-line bg-black/20 hover:border-signal/50'
             }`}

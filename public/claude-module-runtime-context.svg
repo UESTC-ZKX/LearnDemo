@@ -1,0 +1,36 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="32" fill="#08111E"/>
+  <rect x="40" y="40" width="1120" height="680" rx="28" fill="#0E1A2D" stroke="#2F4D77"/>
+  <text x="70" y="98" fill="#E6F0FF" font-size="42" font-family="Arial" font-weight="700">ToolUseContext + AppState</text>
+  <text x="70" y="135" fill="#C3A5FF" font-size="22" font-family="Arial">Shared runtime facts for the whole system</text>
+  <rect x="250" y="150" width="700" height="430" rx="28" fill="#151C3C" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="468" y="196" fill="#F4F0FF" font-size="30" font-family="Arial" font-weight="700">Runtime Context Hub</text>
+  <rect x="310" y="235" width="250" height="275" rx="22" fill="#2A1B4A" stroke="#A78BFA"/>
+  <text x="342" y="275" fill="#F7F3FF" font-size="26" font-family="Arial" font-weight="700">ToolUseContext</text>
+  <text x="342" y="320" fill="#E4D8FF" font-size="20" font-family="Arial">Tools / commands</text>
+  <text x="342" y="356" fill="#E4D8FF" font-size="20" font-family="Arial">MCP resources</text>
+  <text x="342" y="392" fill="#E4D8FF" font-size="20" font-family="Arial">Abort + permission context</text>
+  <text x="342" y="428" fill="#E4D8FF" font-size="20" font-family="Arial">File reads + UI hooks</text>
+  <rect x="640" y="235" width="250" height="275" rx="22" fill="#15383B" stroke="#43D5C7"/>
+  <text x="716" y="275" fill="#F3FFFF" font-size="26" font-family="Arial" font-weight="700">AppState</text>
+  <text x="674" y="320" fill="#D7F7F3" font-size="20" font-family="Arial">Messages + UI</text>
+  <text x="674" y="356" fill="#D7F7F3" font-size="20" font-family="Arial">Tasks + background jobs</text>
+  <text x="674" y="392" fill="#D7F7F3" font-size="20" font-family="Arial">Plugins + agents</text>
+  <text x="674" y="428" fill="#D7F7F3" font-size="20" font-family="Arial">Notifications + hooks</text>
+  <path d="M566 300H634" stroke="#A78BFA" stroke-width="3" stroke-dasharray="10 10"/>
+  <path d="M566 374H634" stroke="#A78BFA" stroke-width="3" stroke-dasharray="10 10"/>
+  <path d="M566 448H634" stroke="#A78BFA" stroke-width="3" stroke-dasharray="10 10"/>
+  <text x="494" y="292" fill="#E3D7FF" font-size="18" font-family="Arial">Read shared state</text>
+  <text x="500" y="366" fill="#E3D7FF" font-size="18" font-family="Arial">Update runtime</text>
+  <text x="478" y="440" fill="#E3D7FF" font-size="18" font-family="Arial">Drive UI coordination</text>
+  <rect x="86" y="190" width="120" height="70" rx="16" fill="#211B3A" stroke="#8B5CF6"/><text x="110" y="233" fill="#F2EDFF" font-size="18" font-family="Arial">Current tools</text>
+  <rect x="86" y="278" width="120" height="70" rx="16" fill="#211B3A" stroke="#8B5CF6"/><text x="99" y="321" fill="#F2EDFF" font-size="18" font-family="Arial">Commands</text>
+  <rect x="86" y="366" width="120" height="70" rx="16" fill="#211B3A" stroke="#8B5CF6"/><text x="95" y="409" fill="#F2EDFF" font-size="18" font-family="Arial">Permissions</text>
+  <rect x="86" y="454" width="120" height="70" rx="16" fill="#211B3A" stroke="#8B5CF6"/><text x="110" y="497" fill="#F2EDFF" font-size="18" font-family="Arial">Abort</text>
+  <rect x="994" y="190" width="120" height="70" rx="16" fill="#163A39" stroke="#43D5C7"/><text x="1025" y="233" fill="#F2FFFF" font-size="18" font-family="Arial">Messages</text>
+  <rect x="994" y="278" width="120" height="70" rx="16" fill="#163A39" stroke="#43D5C7"/><text x="1045" y="321" fill="#F2FFFF" font-size="18" font-family="Arial">UI</text>
+  <rect x="994" y="366" width="120" height="70" rx="16" fill="#163A39" stroke="#43D5C7"/><text x="1030" y="409" fill="#F2FFFF" font-size="18" font-family="Arial">Tasks</text>
+  <rect x="994" y="454" width="120" height="70" rx="16" fill="#163A39" stroke="#43D5C7"/><text x="1010" y="497" fill="#F2FFFF" font-size="18" font-family="Arial">Notifications</text>
+  <rect x="250" y="618" width="700" height="72" rx="18" fill="#122846" stroke="#6EA1FF"/>
+  <text x="300" y="661" fill="#EAF2FF" font-size="22" font-family="Arial">Consumers: Conversation Engine · Tool Execution · UI / REPL</text>
+</svg>

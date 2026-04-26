@@ -1,6 +1,8 @@
 import type { Chapter } from '../data/chapters';
-import { StageCard } from './StageCard';
+import { AgentChapterSection } from './AgentChapterSection';
+import { ClaudeArchitectureChapterSection } from './ClaudeArchitectureChapterSection';
 import { ModelEvolutionLab } from './ModelEvolutionLab';
+import { StageCard } from './StageCard';
 
 interface ChapterSectionProps {
   chapter: Chapter;
@@ -13,6 +15,14 @@ const accentClassNames: Record<Chapter['accent'], string> = {
 };
 
 export function ChapterSection({ chapter }: ChapterSectionProps) {
+  if (chapter.id === 'chapter-agents') {
+    return <AgentChapterSection chapter={chapter} />;
+  }
+
+  if (chapter.id === 'chapter-claude') {
+    return <ClaudeArchitectureChapterSection chapter={chapter} />;
+  }
+
   return (
     <section className="chapter-section scroll-mt-8" id={chapter.id}>
       <div className="mb-8 flex flex-col gap-5 border-b border-line pb-8 lg:flex-row lg:items-end lg:justify-between">

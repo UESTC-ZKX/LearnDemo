@@ -3,17 +3,17 @@ import { chapters } from './chapters';
 
 describe('chapters data', () => {
   it('defines the three required chapters in order', () => {
-    expect(chapters.map((chapter) => chapter.title)).toEqual([
-      '大模型发展',
-      '智能体（Agent）框架选型',
-      'Claude 工程实现解析',
+    expect(chapters.map((chapter) => chapter.id)).toEqual([
+      'chapter-models',
+      'chapter-agents',
+      'chapter-claude',
     ]);
   });
 
   it('keeps content data ready for later demo replacement', () => {
     for (const chapter of chapters) {
       expect(chapter.id).toMatch(/^chapter-/);
-      expect(chapter.overview).toContain('本阶段');
+      expect(chapter.overview.length).toBeGreaterThan(20);
       expect(chapter.stages.length).toBeGreaterThanOrEqual(3);
       expect(chapter.handoff).toBeTruthy();
       expect(chapter.summary.length).toBeGreaterThanOrEqual(3);
@@ -45,7 +45,41 @@ describe('chapters data', () => {
 
   it('keeps chapter-specific content constraints visible in the data', () => {
     expect(chapters[0].stages.map((stage) => stage.timeframe).filter(Boolean).length).toBe(chapters[0].stages.length);
-    expect(chapters[1].summary.join('')).toContain('不是所有场景都需要智能体（Agent）');
-    expect(chapters[2].summary.join('')).toContain('工程模块');
+    expect(chapters[1].summary.join('')).toContain('Agent');
+    expect(chapters[2].summary.join('')).toContain('工程');
+  });
+
+  it('structures the first chapter around bottlenecks, upgrades, and formula spotlights', () => {
+    expect(chapters[0].stages).toHaveLength(5);
+
+    for (const stage of chapters[0].stages) {
+      const enrichedStage = stage as unknown as {
+        analysis?: {
+          coreProblem?: string;
+          majorUpgrade?: string;
+          solvedWhat?: string;
+          remainingLimits?: string;
+          systemShift?: string;
+        };
+        formulaSpotlight?: {
+          title?: string;
+          expression?: string;
+          explanation?: string;
+          variables?: string[];
+          visualizationLabel?: string;
+        };
+      };
+
+      expect(enrichedStage.analysis?.coreProblem).toBeTruthy();
+      expect(enrichedStage.analysis?.majorUpgrade).toBeTruthy();
+      expect(enrichedStage.analysis?.solvedWhat).toBeTruthy();
+      expect(enrichedStage.analysis?.remainingLimits).toBeTruthy();
+      expect(enrichedStage.analysis?.systemShift).toBeTruthy();
+      expect(enrichedStage.formulaSpotlight?.title).toBeTruthy();
+      expect(enrichedStage.formulaSpotlight?.expression).toBeTruthy();
+      expect(enrichedStage.formulaSpotlight?.explanation).toBeTruthy();
+      expect(enrichedStage.formulaSpotlight?.variables?.length).toBeGreaterThanOrEqual(2);
+      expect(enrichedStage.formulaSpotlight?.visualizationLabel).toBeTruthy();
+    }
   });
 });

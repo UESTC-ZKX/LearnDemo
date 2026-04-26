@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { AgentEvolutionDemoPage } from './components/demos/AgentEvolutionDemoPage';
 import { BackpropDemoPage } from './components/demos/backprop/BackpropDemoPage';
 import { PerceptronDemoPage } from './components/demos/perceptron/PerceptronDemoPage';
 import { TransformerDemoPage } from './components/demos/transformer/TransformerDemoPage';
@@ -15,6 +16,8 @@ const RootComponent =
       ? BackpropDemoPage
       : appMode === 'transformer-demo'
         ? TransformerDemoPage
+        : appMode === 'agent-evolution-demo'
+          ? AgentEvolutionDemoPage
         : App;
 
 createRoot(document.getElementById('root')!).render(

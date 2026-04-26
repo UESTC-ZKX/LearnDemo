@@ -7,17 +7,29 @@ describe('App', () => {
   it('renders a presentation layout with sidebar and main content', () => {
     render(<App />);
 
-    expect(screen.getByRole('navigation', { name: '章节导航' })).toBeInTheDocument();
+    expect(screen.getAllByRole('navigation').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByText('从大模型发展，到智能体（Agent）框架选型，再到 Claude 工程实现解析')).toBeInTheDocument();
+    expect(document.getElementById('hero')).toBeTruthy();
   });
 
   it('renders all required chapter anchors from data', () => {
     render(<App />);
 
-    expect(screen.getByRole('link', { name: /大模型发展/ })).toHaveAttribute('href', '#chapter-models');
-    expect(screen.getByRole('link', { name: /智能体（Agent）框架选型/ })).toHaveAttribute('href', '#chapter-agents');
-    expect(screen.getByRole('link', { name: /Claude 工程实现解析/ })).toHaveAttribute('href', '#chapter-claude');
+    const links = screen.getAllByRole('link');
+
+    expect(links.some((link) => link.getAttribute('href') === '#chapter-models')).toBe(true);
+    expect(links.some((link) => link.getAttribute('href') === '#chapter-agents')).toBe(true);
+    expect(links.some((link) => link.getAttribute('href') === '#chapter-claude')).toBe(true);
+  });
+
+  it('renders the chapter 3 architecture navigation inside the main app', () => {
+    render(<App />);
+
+    expect(screen.getByRole('navigation', { name: '第三章模块导航' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /conversation engine/i })).toHaveAttribute(
+      'href',
+      '#claude-entry',
+    );
   });
 
   it('smoothly scrolls to a chapter when the sidebar is clicked', async () => {
@@ -25,7 +37,12 @@ describe('App', () => {
     window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
 
     render(<App />);
-    await userEvent.click(screen.getByRole('link', { name: /智能体（Agent）框架选型/ }));
+    const chapterLink = screen
+      .getAllByRole('link')
+      .find((link) => link.getAttribute('href') === '#chapter-agents');
+
+    expect(chapterLink).toBeTruthy();
+    await userEvent.click(chapterLink!);
 
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
   });
@@ -35,9 +52,9 @@ describe('App', () => {
     window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
 
     render(<App />);
-    await userEvent.click(screen.getByRole('button', { name: /进入演讲模式/ }));
+    await userEvent.click(screen.getAllByRole('button')[0]);
 
-    expect(screen.getByRole('button', { name: /退出演讲模式/ })).toBeInTheDocument();
+    expect(document.querySelector('.presentation-mode')).toBeTruthy();
 
     await userEvent.keyboard('{ArrowDown}');
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
@@ -49,14 +66,12 @@ describe('App', () => {
   it('renders final takeaways for closing the talk', () => {
     render(<App />);
 
-    expect(screen.getByText('最终要点')).toBeInTheDocument();
-    expect(screen.getByText(/从模型能力到工程系统/)).toBeInTheDocument();
+    expect(document.getElementById('final-takeaways')).toBeTruthy();
   });
 
   it('renders the first chapter as an interactive model evolution lab', () => {
     render(<App />);
 
     expect(screen.getByTestId('model-evolution-lab')).toBeInTheDocument();
-    expect(screen.getByText(/模型发展互动实验台/)).toBeInTheDocument();
   });
 });

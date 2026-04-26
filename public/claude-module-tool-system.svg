@@ -1,0 +1,39 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="32" fill="#08111E"/>
+  <rect x="40" y="40" width="1120" height="680" rx="28" fill="#0E1A2D" stroke="#2F4D77"/>
+  <text x="70" y="98" fill="#E6F0FF" font-size="42" font-family="Arial" font-weight="700">Tool System + Tool Orchestration</text>
+  <text x="70" y="135" fill="#8FD9D4" font-size="22" font-family="Arial">Turn model intent into governed action</text>
+  <rect x="72" y="180" width="220" height="280" rx="20" fill="#12343A" stroke="#2DD4BF"/>
+  <text x="100" y="220" fill="#F6FFFF" font-size="24" font-family="Arial" font-weight="700">Tool Sources</text>
+  <text x="100" y="265" fill="#D3FAF3" font-size="20" font-family="Arial">Built-in tools</text>
+  <text x="100" y="305" fill="#D3FAF3" font-size="20" font-family="Arial">Plugin tools</text>
+  <text x="100" y="345" fill="#D3FAF3" font-size="20" font-family="Arial">MCP / Remote tools</text>
+  <text x="100" y="385" fill="#D3FAF3" font-size="20" font-family="Arial">Agent / Task tools</text>
+  <rect x="330" y="180" width="530" height="106" rx="20" fill="#142C49" stroke="#50C5D3"/>
+  <text x="362" y="222" fill="#F7FBFF" font-size="26" font-family="Arial" font-weight="700">Tool Registry</text>
+  <text x="362" y="260" fill="#D2EAF8" font-size="20" font-family="Arial">schema · description · isEnabled · isConcurrencySafe · permissions</text>
+  <rect x="330" y="312" width="530" height="278" rx="24" fill="#112138" stroke="#5E9CFF" stroke-width="2"/>
+  <text x="362" y="352" fill="#F8FBFF" font-size="28" font-family="Arial" font-weight="700">Tool Orchestrator</text>
+  <g fill="#E8F2FF" font-size="20" font-family="Arial">
+    <text x="368" y="398">1. Receive tool calls</text>
+    <text x="368" y="434">2. Parse schema</text>
+    <text x="368" y="470">3. Check permissions</text>
+    <text x="368" y="506">4. Group by parallel or serial safety</text>
+    <text x="368" y="542">5. Execute tools and collect progress</text>
+    <text x="368" y="578">6. Summarize results and preserve order</text>
+  </g>
+  <rect x="890" y="180" width="230" height="280" rx="20" fill="#2E2311" stroke="#F59E0B"/>
+  <text x="920" y="220" fill="#FFF8E8" font-size="24" font-family="Arial" font-weight="700">Outputs</text>
+  <text x="920" y="266" fill="#FCE8B2" font-size="20" font-family="Arial">Tool result</text>
+  <text x="920" y="306" fill="#FCE8B2" font-size="20" font-family="Arial">Structured output</text>
+  <text x="920" y="346" fill="#FCE8B2" font-size="20" font-family="Arial">Progress events</text>
+  <text x="920" y="386" fill="#FCE8B2" font-size="20" font-family="Arial">Error / retry signal</text>
+  <rect x="72" y="510" width="500" height="150" rx="22" fill="#17351D" stroke="#4ADE80"/>
+  <text x="102" y="548" fill="#F4FFF6" font-size="24" font-family="Arial" font-weight="700">Parallel-safe tools</text>
+  <text x="102" y="588" fill="#D8F8DF" font-size="20" font-family="Arial">Read-only search, lookup, resource fetch, status checks</text>
+  <text x="102" y="624" fill="#D8F8DF" font-size="20" font-family="Arial">Run together when side effects are independent</text>
+  <rect x="620" y="510" width="500" height="150" rx="22" fill="#3A1F12" stroke="#FB923C"/>
+  <text x="650" y="548" fill="#FFF7F2" font-size="24" font-family="Arial" font-weight="700">Serial-only tools</text>
+  <text x="650" y="588" fill="#FED7C7" font-size="20" font-family="Arial">File writes, shell writes, state changes, config mutation</text>
+  <text x="650" y="624" fill="#FED7C7" font-size="20" font-family="Arial">Must stay ordered to avoid conflicts</text>
+</svg>

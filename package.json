@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File ./scripts/start-dev-hidden.ps1",
+    "dev:hidden": "powershell -ExecutionPolicy Bypass -File ./scripts/start-dev-hidden.ps1",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
