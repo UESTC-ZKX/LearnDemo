@@ -25,11 +25,26 @@ export interface BackpropSampleAnalysis {
   updatedState: BackpropNetworkState;
 }
 
+export interface BackpropFunctionPoint {
+  x: number;
+  target: number;
+}
+
+export interface BackpropFunctionInsight {
+  currentLoss: number;
+  inputX: number;
+  isImproving: boolean;
+  lossDelta: number;
+  predictionY: number;
+  previousLoss: number;
+  targetY: number;
+}
+
+export type BackpropLossSeriesMode = 'sample' | 'epoch';
+
 const DEFAULT_DATASET: BackpropSample[] = [
   { id: 'sample-a', inputs: [0, 0], target: 0 },
-  { id: 'sample-b', inputs: [0, 1], target: 1 },
-  { id: 'sample-c', inputs: [1, 0], target: 1 },
-  { id: 'sample-d', inputs: [1, 1], target: 1 },
+  { id: 'sample-b', inputs: [1, 0], target: 1 },
 ];
 
 export function createBackpropDataset(): BackpropSample[] {
@@ -41,6 +56,20 @@ export function createBackpropDataset(): BackpropSample[] {
 
 export function getBackpropHiddenCount(preset: BackpropNetworkPreset): number {
   return preset === 'small' ? 2 : 3;
+}
+
+export function createBackpropFunctionCurve(): BackpropFunctionPoint[] {
+  const points: BackpropFunctionPoint[] = [];
+
+  for (let index = 0; index <= 10; index += 1) {
+    const x = Number((index / 10).toFixed(1));
+    points.push({
+      x,
+      target: Number((0.1 + x * 0.8).toFixed(1)),
+    });
+  }
+
+  return points;
 }
 
 export function createBackpropNetworkState(preset: BackpropNetworkPreset): BackpropNetworkState {
@@ -136,6 +165,50 @@ export function getAverageBackpropLoss(dataset: BackpropSample[], state: Backpro
   }
 
   return totalLoss / dataset.length;
+}
+
+export function getBackpropFunctionInsight(
+  sample: BackpropSample,
+  analysis: BackpropSampleAnalysis,
+  history: number[],
+): BackpropFunctionInsight {
+  const inputX = sample.inputs[0];
+  const targetY = Number((0.1 + inputX * 0.8).toFixed(1));
+  const currentLoss = history.at(-1) ?? Number(analysis.loss.toFixed(4));
+  const previousLoss = history.length > 1 ? history.at(-2)! : currentLoss;
+  const lossDelta = Number((currentLoss - previousLoss).toFixed(4));
+
+  return {
+    currentLoss,
+    inputX,
+    isImproving: lossDelta <= 0,
+    lossDelta,
+    predictionY: Number(analysis.output.toFixed(4)),
+    previousLoss,
+    targetY,
+  };
+}
+
+export function getBackpropLossSeries(
+  mode: BackpropLossSeriesMode,
+  sample: BackpropSample,
+  state: BackpropNetworkState,
+  analysis: BackpropSampleAnalysis,
+  history: number[],
+  learningRate: number,
+): number[] {
+  if (mode === 'sample') {
+    const currentLoss = Number(analysis.loss.toFixed(4));
+    const updatedAnalysis = analyzeBackpropSample(sample, analysis.updatedState, learningRate);
+    const nextLoss = Number(updatedAnalysis.loss.toFixed(4));
+    return [currentLoss, nextLoss];
+  }
+
+  if (history.length > 0) {
+    return history;
+  }
+
+  return [Number(getAverageBackpropLoss([sample], state).toFixed(4))];
 }
 
 function cloneState(state: BackpropNetworkState): BackpropNetworkState {

@@ -1,9 +1,9 @@
 interface BackpropTimelinePanelProps {
+  activeStepIndex: number;
   currentLabel: string;
   history: number[];
   mode: 'sample' | 'epoch';
   stepLabels: string[];
-  activeStepIndex: number;
 }
 
 export function BackpropTimelinePanel(props: BackpropTimelinePanelProps) {

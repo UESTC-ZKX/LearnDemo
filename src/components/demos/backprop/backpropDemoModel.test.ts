@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   analyzeBackpropSample,
   createBackpropDataset,
+  createBackpropFunctionCurve,
   createBackpropNetworkState,
+  getBackpropLossSeries,
+  getBackpropFunctionInsight,
   getBackpropHiddenCount,
   trainBackpropEpoch,
 } from './backpropDemoModel';
@@ -22,6 +25,28 @@ describe('backpropDemoModel', () => {
     expect(analysis.loss).toBeGreaterThan(0);
     expect(analysis.outputGradient).not.toBe(0);
     expect(analysis.updatedState.outputWeights[0]).not.toBe(state.outputWeights[0]);
+  });
+
+  it('uses a simplified teaching dataset and derives function-visualization insight', () => {
+    const dataset = createBackpropDataset();
+    const state = createBackpropNetworkState('small');
+    const analysis = analyzeBackpropSample(dataset[1], state, 0.3);
+    const curve = createBackpropFunctionCurve();
+    const insight = getBackpropFunctionInsight(dataset[1], analysis, [0.18, 0.12]);
+    const lossSeries = getBackpropLossSeries('sample', dataset[1], state, analysis, [0.18, 0.12], 0.3);
+
+    expect(dataset).toHaveLength(2);
+    expect(dataset.map((sample) => sample.id)).toEqual(['sample-a', 'sample-b']);
+    expect(curve.length).toBeGreaterThan(8);
+    expect(curve[0]).toEqual({ x: 0, target: 0.1 });
+    expect(curve.at(-1)).toEqual({ x: 1, target: 0.9 });
+    expect(insight.inputX).toBe(1);
+    expect(insight.targetY).toBe(0.9);
+    expect(insight.currentLoss).toBe(0.12);
+    expect(insight.previousLoss).toBe(0.18);
+    expect(insight.lossDelta).toBeLessThan(0);
+    expect(lossSeries).toHaveLength(2);
+    expect(lossSeries[1]).toBeLessThan(lossSeries[0]);
   });
 
   it('reduces average loss after multiple epochs', () => {
