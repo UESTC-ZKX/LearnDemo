@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BackpropFunctionInsight, BackpropFunctionPoint } from './backpropDemoModel';
 
 interface BackpropFunctionPanelProps {
@@ -144,6 +145,24 @@ export function BackpropFunctionPanel(props: BackpropFunctionPanelProps) {
 
 export function BackpropChainRuleCard(props: BackpropChainRuleCardProps) {
   const { imageSrc } = props;
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isPreviewOpen) {
+      return undefined;
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsPreviewOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isPreviewOpen]);
 
   return (
     <section className="rounded-[2rem] border border-line bg-black/20 p-6 shadow-projection">
@@ -161,10 +180,46 @@ export function BackpropChainRuleCard(props: BackpropChainRuleCardProps) {
 
         <img
           src={imageSrc}
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsPreviewOpen(true)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              setIsPreviewOpen(true);
+            }
+          }}
           alt="链式法则示意图"
-          className="w-full rounded-[1.5rem] border border-line bg-white/95 object-cover shadow-projection"
+          className="w-full cursor-zoom-in rounded-[1.5rem] border border-line bg-white/95 object-cover shadow-projection"
         />
       </div>
+      {isPreviewOpen ? (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="图片放大预览"
+          onClick={() => setIsPreviewOpen(false)}
+        >
+          <div
+            className="mx-auto flex h-full max-w-6xl flex-col rounded-[1.5rem] border border-line bg-ink shadow-projection"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
+              <div>
+                <p className="text-sm font-semibold text-signal">图片放大预览</p>
+                <h3 className="mt-1 text-lg font-semibold text-white">链式法则示意图</h3>
+              </div>
+              <button type="button" className="control-button" onClick={() => setIsPreviewOpen(false)}>
+                关闭预览
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto p-5">
+              <img src={imageSrc} alt="链式法则示意图" className="mx-auto w-full rounded-xl bg-white object-contain" />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

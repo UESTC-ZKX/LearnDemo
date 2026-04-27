@@ -12,7 +12,8 @@ const sectionIds = chapters.map((chapter) => chapter.id);
 function App() {
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [targetIndex, setTargetIndex] = useState(0);
-  const activeSectionId = useActiveSection(sectionIds);
+  const observedSectionId = useActiveSection(sectionIds);
+  const [activeSectionId, setActiveSectionId] = useState(sectionIds[0] ?? '');
   const presentationTargets = useMemo(
     () => [
       'hero',
@@ -28,7 +29,14 @@ function App() {
     [],
   );
 
+  useEffect(() => {
+    if (observedSectionId) {
+      setActiveSectionId(observedSectionId);
+    }
+  }, [observedSectionId]);
+
   function handleNavigate(id: string) {
+    setActiveSectionId(id);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     const nextIndex = presentationTargets.indexOf(id);
     if (nextIndex >= 0) {

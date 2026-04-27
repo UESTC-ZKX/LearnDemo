@@ -8,11 +8,26 @@ export function useActiveSection(sectionIds: string[]) {
       return;
     }
 
+    const visibleEntries = new Map<string, IntersectionObserverEntry>();
+
     const observer = new IntersectionObserver(
       (entries) => {
-        const visibleEntry = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        for (const entry of entries) {
+          const id = entry.target.id;
+          if (!id) {
+            continue;
+          }
+
+          if (entry.isIntersecting) {
+            visibleEntries.set(id, entry);
+          } else {
+            visibleEntries.delete(id);
+          }
+        }
+
+        const visibleEntry = Array.from(visibleEntries.values()).sort(
+          (a, b) => Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top),
+        )[0];
 
         if (visibleEntry?.target.id) {
           setActiveSectionId(visibleEntry.target.id);
@@ -20,8 +35,8 @@ export function useActiveSection(sectionIds: string[]) {
       },
       {
         root: null,
-        rootMargin: '-25% 0px -55% 0px',
-        threshold: [0.15, 0.35, 0.6],
+        rootMargin: '-12% 0px -70% 0px',
+        threshold: 0,
       },
     );
 
@@ -32,7 +47,10 @@ export function useActiveSection(sectionIds: string[]) {
       }
     }
 
-    return () => observer.disconnect();
+    return () => {
+      visibleEntries.clear();
+      observer.disconnect();
+    };
   }, [sectionIds]);
 
   return activeSectionId;

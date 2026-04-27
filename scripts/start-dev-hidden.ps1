@@ -4,7 +4,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $stdoutLog = Join-Path $projectRoot 'devserver.log'
 $stderrLog = Join-Path $projectRoot 'devserver.err.log'
 $pidFile = Join-Path $projectRoot 'devserver.pid'
-$hostAddress = '127.0.0.1'
+$hostAddress = '0.0.0.0'
 $port = 5173
 
 function Test-PortListening {
@@ -16,17 +16,31 @@ function Test-PortListening {
   return $null -ne $connection
 }
 
+function Reset-LogFile {
+  param(
+    [string]$LogPath,
+    [string]$LogName
+  )
+
+  try {
+    Set-Content -LiteralPath $LogPath -Value ''
+  }
+  catch {
+    Write-Warning "Unable to reset ${LogName} at ${LogPath}. $($_.Exception.Message)"
+  }
+}
+
 if (Test-PortListening -TargetPort $port) {
   Write-Output "Dev server is already listening at http://${hostAddress}:${port}/"
   exit 0
 }
 
-Set-Content -LiteralPath $stdoutLog -Value ''
-Set-Content -LiteralPath $stderrLog -Value ''
+Reset-LogFile -LogPath $stdoutLog -LogName 'stdout log'
+Reset-LogFile -LogPath $stderrLog -LogName 'stderr log'
 
 $process = Start-Process `
   -FilePath 'cmd.exe' `
-  -ArgumentList '/c', 'npm.cmd run dev -- --host 127.0.0.1' `
+  -ArgumentList '/c', 'npm.cmd run dev -- --host 0.0.0.0' `
   -WorkingDirectory $projectRoot `
   -WindowStyle Hidden `
   -RedirectStandardOutput $stdoutLog `
