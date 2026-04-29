@@ -4,7 +4,9 @@ type ModuleId =
   | 'input-embedding'
   | 'positional-encoding'
   | 'encoder-self-attention'
+  | 'add-norm'
   | 'feed-forward'
+  | 'output-embedding'
   | 'masked-self-attention'
   | 'cross-attention'
   | 'linear-softmax';
@@ -34,17 +36,31 @@ const modules: TransformerModule[] = [
   },
   {
     id: 'encoder-self-attention',
-    title: 'Encoder Self-Attention',
+    title: 'Multi-Head Self-Attention',
     layer: 'Encoder',
     responsibility: '让源句每个 token 直接查看其它 token，形成包含上下文的 source sentence memory。',
-    principle: 'Q 和 K 计算相关性，softmax 得到权重，再对 V 加权求和。',
+    principle: '每个头用 Q 和 K 计算相关性，softmax 得到权重，再对 V 加权求和；多头并行让模型从不同语义子空间观察关系。',
   },
   {
     id: 'feed-forward',
-    title: 'Feed Forward',
+    title: 'Feed Forward Network',
     layer: 'Encoder',
     responsibility: '对每个位置独立做非线性变换，提升特征表达能力。',
     principle: '注意力负责混合不同位置的信息，FFN 负责在单个位置上加工信息。',
+  },
+  {
+    id: 'add-norm',
+    title: 'Add & Norm',
+    layer: 'Encoder',
+    responsibility: '把子层输入通过残差连接加回输出，再做 LayerNorm，让深层堆叠更稳定。',
+    principle: 'Add 保留原始信息并改善梯度流动，Norm 把每个位置的表示归一化，降低训练震荡。',
+  },
+  {
+    id: 'output-embedding',
+    title: 'Output Embedding',
+    layer: 'Decoder',
+    responsibility: '把已经生成的目标 token 映射成向量，作为 decoder 下一步生成的输入。',
+    principle: '训练时目标序列会右移一位输入 decoder；推理时则把上一步生成的 token 再送回 decoder。',
   },
   {
     id: 'masked-self-attention',
@@ -55,7 +71,7 @@ const modules: TransformerModule[] = [
   },
   {
     id: 'cross-attention',
-    title: 'Cross-Attention',
+    title: 'Encoder-Decoder Attention',
     layer: 'Decoder',
     responsibility: '让目标端每一步回看 encoder 产出的 source sentence memory，决定当前词该翻译源句哪一部分。',
     principle: 'Decoder state 做 Q，Encoder memory 做 K/V，把生成端和源句语义对齐。',
@@ -95,6 +111,150 @@ const translationSteps = [
     generated: '我 爱 人工智能',
   },
 ];
+
+const architectureNodes: Array<{
+  key: string;
+  id: ModuleId;
+  label: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  tone: 'encoder' | 'decoder' | 'output';
+}> = [
+  { key: 'encoder-input', id: 'input-embedding', label: 'Input Embedding', x: 55, y: 430, w: 210, h: 40, tone: 'encoder' },
+  { key: 'encoder-position', id: 'positional-encoding', label: 'Positional Encoding', x: 55, y: 370, w: 210, h: 40, tone: 'encoder' },
+  { key: 'encoder-attention', id: 'encoder-self-attention', label: 'Multi-Head Attention', x: 55, y: 270, w: 210, h: 46, tone: 'encoder' },
+  { key: 'encoder-attention-norm', id: 'add-norm', label: 'Add & Norm', x: 75, y: 220, w: 170, h: 34, tone: 'encoder' },
+  { key: 'encoder-ffn', id: 'feed-forward', label: 'Feed Forward', x: 55, y: 145, w: 210, h: 46, tone: 'encoder' },
+  { key: 'encoder-ffn-norm', id: 'add-norm', label: 'Add & Norm', x: 75, y: 95, w: 170, h: 34, tone: 'encoder' },
+  { key: 'decoder-output-embedding', id: 'output-embedding', label: 'Output Embedding', x: 405, y: 480, w: 210, h: 40, tone: 'decoder' },
+  { key: 'decoder-masked-attention', id: 'masked-self-attention', label: 'Masked Multi-Head Attention', x: 405, y: 380, w: 210, h: 46, tone: 'decoder' },
+  { key: 'decoder-masked-norm', id: 'add-norm', label: 'Add & Norm', x: 425, y: 330, w: 170, h: 34, tone: 'decoder' },
+  { key: 'decoder-cross-attention', id: 'cross-attention', label: 'Multi-Head Attention', x: 405, y: 270, w: 210, h: 46, tone: 'decoder' },
+  { key: 'decoder-cross-norm', id: 'add-norm', label: 'Add & Norm', x: 425, y: 220, w: 170, h: 34, tone: 'decoder' },
+  { key: 'decoder-ffn', id: 'feed-forward', label: 'Feed Forward', x: 405, y: 160, w: 210, h: 46, tone: 'decoder' },
+  { key: 'decoder-ffn-norm', id: 'add-norm', label: 'Add & Norm', x: 425, y: 110, w: 170, h: 34, tone: 'decoder' },
+  { key: 'output-linear-softmax', id: 'linear-softmax', label: 'Linear + Softmax', x: 405, y: 60, w: 210, h: 38, tone: 'output' },
+];
+
+function ClassicTransformerArchitecture({
+  activeModuleId,
+  onSelect,
+}: {
+  activeModuleId: ModuleId;
+  onSelect: (id: ModuleId) => void;
+}) {
+  const activeNode = architectureNodes.find((node) => node.id === activeModuleId) ?? architectureNodes[0];
+
+  return (
+    <svg
+      className="mt-5 w-full rounded border border-line bg-zinc-950/80 p-2"
+      viewBox="0 0 670 590"
+      role="img"
+      aria-label="Transformer 经典 Encoder Decoder 架构图"
+    >
+      <defs>
+        <marker id="transformer-arrow" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
+          <path d="M0,0 L8,4 L0,8 Z" fill="rgba(255,255,255,0.55)" />
+        </marker>
+      </defs>
+      <text x="160" y="32" fill="#ffffff" fontSize="18" fontWeight="700" textAnchor="middle">
+        Encoder
+      </text>
+      <text x="510" y="32" fill="#ffffff" fontSize="18" fontWeight="700" textAnchor="middle">
+        Decoder
+      </text>
+      <text x="31" y="92" fill="rgba(61,214,198,0.9)" fontSize="14" fontWeight="700">
+        Nx
+      </text>
+      <text x="381" y="100" fill="rgba(245,158,11,0.9)" fontSize="14" fontWeight="700">
+        Nx
+      </text>
+      <rect x="35" y="80" width="250" height="250" rx="12" fill="rgba(61,214,198,0.06)" stroke="rgba(61,214,198,0.35)" />
+      <rect x="385" y="105" width="250" height="340" rx="12" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.35)" />
+
+      {architectureNodes.map((node) => {
+        const isActive = node.id === activeModuleId;
+        const fill =
+          node.tone === 'encoder'
+            ? isActive
+              ? 'rgba(61,214,198,0.28)'
+              : 'rgba(61,214,198,0.12)'
+            : node.tone === 'decoder'
+              ? isActive
+                ? 'rgba(245,158,11,0.28)'
+                : 'rgba(245,158,11,0.12)'
+              : isActive
+                ? 'rgba(255,255,255,0.18)'
+                : 'rgba(255,255,255,0.08)';
+        const stroke =
+          node.tone === 'encoder'
+            ? isActive
+              ? '#3dd6c6'
+              : 'rgba(61,214,198,0.56)'
+            : node.tone === 'decoder'
+              ? isActive
+                ? '#f59e0b'
+                : 'rgba(245,158,11,0.56)'
+              : isActive
+                ? '#ffffff'
+                : 'rgba(255,255,255,0.42)';
+
+        return (
+          <g
+            key={node.key}
+            role="button"
+            tabIndex={0}
+            onClick={() => onSelect(node.id)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                onSelect(node.id);
+              }
+            }}
+          >
+            <rect x={node.x} y={node.y} width={node.w} height={node.h} rx="8" fill={fill} stroke={stroke} strokeWidth={isActive ? 2.5 : 1.5} />
+            <text x={node.x + node.w / 2} y={node.y + node.h / 2 + 5} fill="#ffffff" fontSize="14" fontWeight="700" textAnchor="middle">
+              {node.label}
+            </text>
+          </g>
+        );
+      })}
+
+      {[
+        [160, 430, 160, 410],
+        [160, 370, 160, 316],
+        [160, 270, 160, 254],
+        [160, 220, 160, 191],
+        [160, 145, 160, 129],
+        [510, 480, 510, 426],
+        [510, 380, 510, 364],
+        [510, 330, 510, 316],
+        [510, 270, 510, 254],
+        [510, 220, 510, 206],
+        [510, 160, 510, 144],
+        [510, 110, 510, 98],
+      ].map(([x1, y1, x2, y2]) => (
+        <line key={`${x1}-${y1}-${y2}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.48)" strokeWidth="2" markerEnd="url(#transformer-arrow)" />
+      ))}
+
+      <line x1="265" y1="118" x2="405" y2="293" stroke="rgba(255,255,255,0.55)" strokeDasharray="7 7" strokeWidth="2" markerEnd="url(#transformer-arrow)" />
+      <text x="335" y="205" fill="rgba(255,255,255,0.62)" fontSize="12" textAnchor="middle">
+        encoder memory
+      </text>
+      <line x1="510" y1="60" x2="510" y2="45" stroke="rgba(255,255,255,0.48)" strokeWidth="2" markerEnd="url(#transformer-arrow)" />
+      <text x="510" y="565" fill="rgba(255,255,255,0.62)" fontSize="13" textAnchor="middle">
+        Outputs shifted right
+      </text>
+      <text x="160" y="565" fill="rgba(255,255,255,0.62)" fontSize="13" textAnchor="middle">
+        Inputs
+      </text>
+      <text x={activeNode.x + activeNode.w / 2} y={activeNode.y - 10} fill="#ffffff" fontSize="12" fontWeight="700" textAnchor="middle">
+        当前讲解
+      </text>
+    </svg>
+  );
+}
 
 function ArchitectureBlock({
   module,
@@ -185,45 +345,35 @@ export function TransformerDemoPage() {
               </span>
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto_1fr]">
-              <div className="rounded border border-signal/60 bg-signal/10 p-4">
-                <div className="text-center text-base font-semibold text-white">Encoder</div>
-                <div className="mt-4 grid gap-2">
+            <ClassicTransformerArchitecture activeModuleId={activeModuleId} onSelect={setActiveModuleId} />
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="rounded border border-signal/50 bg-signal/10 p-4">
+                <h3 className="text-base font-semibold text-white">Encoder：把输入句子压成上下文记忆</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">
+                  源句先经过 embedding 和 position，再在 N 层 encoder 中反复执行 multi-head self-attention、Add &amp; Norm、FFN。输出不是一个词，而是一组带上下文的向量记忆。
+                </p>
+                <div className="mt-3 grid gap-2">
                   {modules
                     .filter((module) => module.layer === 'Encoder')
                     .map((module) => (
-                      <div key={module.id} className="grid gap-2">
-                        <ArchitectureBlock module={module} activeModuleId={activeModuleId} onSelect={setActiveModuleId} />
-                        {module.id === 'encoder-self-attention' || module.id === 'feed-forward' ? (
-                          <div className="rounded border border-line/70 bg-black/10 px-3 py-1 text-center text-xs text-zinc-400">
-                            Add &amp; Norm
-                          </div>
-                        ) : null}
-                      </div>
+                      <ArchitectureBlock key={module.id} module={module} activeModuleId={activeModuleId} onSelect={setActiveModuleId} />
                     ))}
                 </div>
-                <div className="mt-4 rounded border border-line bg-black/20 p-3 text-sm text-zinc-300">源句：I / love / AI</div>
               </div>
 
-              <div className="flex items-center justify-center text-3xl text-zinc-500">→</div>
-
-              <div className="rounded border border-amber/60 bg-amber/10 p-4">
-                <div className="text-center text-base font-semibold text-white">Decoder</div>
-                <div className="mt-4 grid gap-2">
+              <div className="rounded border border-amber/50 bg-amber/10 p-4">
+                <h3 className="text-base font-semibold text-white">Decoder：一边看历史输出，一边回看输入</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">
+                  目标句右移后进入 decoder。Masked self-attention 保证不能偷看未来，Encoder-Decoder Attention 对齐源句记忆，最后 Linear + Softmax 选出下一个 token。
+                </p>
+                <div className="mt-3 grid gap-2">
                   {modules
                     .filter((module) => module.layer === 'Decoder' || module.layer === 'Output')
                     .map((module) => (
-                      <div key={module.id} className="grid gap-2">
-                        <ArchitectureBlock module={module} activeModuleId={activeModuleId} onSelect={setActiveModuleId} />
-                        {module.layer === 'Decoder' ? (
-                          <div className="rounded border border-line/70 bg-black/10 px-3 py-1 text-center text-xs text-zinc-400">
-                            Add &amp; Norm
-                          </div>
-                        ) : null}
-                      </div>
+                      <ArchitectureBlock key={module.id} module={module} activeModuleId={activeModuleId} onSelect={setActiveModuleId} />
                     ))}
                 </div>
-                <div className="mt-4 rounded border border-line bg-black/20 p-3 text-sm text-zinc-300">目标句：我 / 爱 / 人工智能</div>
               </div>
             </div>
 

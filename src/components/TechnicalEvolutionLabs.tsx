@@ -5,6 +5,7 @@ import { buildBackpropDemoUrl, buildPerceptronDemoUrl, buildTransformerDemoUrl }
 type LabId =
   | 'neuron-perceptron'
   | 'perceptron-classification'
+  | 'activation-functions'
   | 'multilayer-backprop'
   | 'cnn-patches'
   | 'rnn-generation'
@@ -33,6 +34,13 @@ const labs: TechnicalLab[] = [
     eyebrow: '样本、目标与更新',
     summary: '用二维样本展示分类目标，说明拟合是学习视角，感知机是具体建模方式。',
     talk: '这里不要只说“拟合函数”，而是给观众一批点：横轴是特征 1，纵轴是特征 2，目标是学出一条能分开两类样本的直线。',
+  },
+  {
+    id: 'activation-functions',
+    title: '激活函数：为什么需要非线性',
+    eyebrow: '线性叠加与表达力边界',
+    summary: '如果没有激活函数，多层线性变换仍等价于一层线性变换；非线性才让网络能组合出复杂边界。',
+    talk: '这张卡放在感知机之后最自然：感知机只能画线，多层网络想变强，必须先回答“加层为什么不是白加”。激活函数给网络引入弯折和饱和，让后面的反向传播训练有意义。',
   },
   {
     id: 'multilayer-backprop',
@@ -79,13 +87,31 @@ const perceptronSamples = [
 ];
 
 const transformerBlocks = [
-  ['Input Embedding', '把 token 变成向量'],
-  ['Positional Encoding', '加入顺序信息'],
-  ['Encoder Self-Attention', '输入 token 彼此关注'],
-  ['Feed Forward', '逐位置非线性变换'],
-  ['Decoder Masked Self-Attention', '生成时只能看已生成 token'],
-  ['Encoder-Decoder Attention', '输出端回看输入语义'],
-  ['Linear + Softmax', '得到下一个 token 概率'],
+  ['Input / Output Embedding', '把离散 token 变成可计算的连续向量'],
+  ['Positional Encoding', '给注意力补上顺序信息，让模型知道词元位置'],
+  ['Multi-Head Self-Attention', '让同一句内的 token 直接建立依赖关系'],
+  ['Add & Norm', '用残差连接保留原信息，再用归一化稳定训练'],
+  ['Feed Forward', '对每个位置独立做非线性加工，提升表达能力'],
+  ['Masked Self-Attention', '生成时屏蔽未来 token，保证自回归预测成立'],
+  ['Encoder-Decoder Attention', 'Decoder 回看 Encoder memory，完成源句与目标词对齐'],
+  ['Linear + Softmax', '把隐藏状态投到词表上，得到下一个 token 概率'],
+];
+
+const activationCards = [
+  {
+    name: 'Sigmoid',
+    formula: 'sigma(x) = 1 / (1 + e^-x)',
+    scene: '常见于二分类输出层，需要把分数压到 0 到 1 来解释成概率。',
+    pros: '输出平滑、范围固定，适合讲“概率”和早期神经网络历史。',
+    cons: '两端梯度接近 0，深层网络容易梯度消失；输出不以 0 为中心。',
+  },
+  {
+    name: 'ReLU',
+    formula: 'ReLU(x) = max(0, x)',
+    scene: '常见于隐藏层，是 MLP、CNN 等深层网络里最常用的默认选择之一。',
+    pros: '计算简单，正区间梯度稳定，能让深层网络训练更快。',
+    cons: '负区间梯度为 0，某些神经元可能长期不再更新，也就是“死亡 ReLU”。',
+  },
 ];
 
 function PerceptronMiniPlane() {
@@ -261,6 +287,121 @@ function PerceptronClassificationLab() {
   );
 }
 
+function ActivationCurveChart() {
+  const width = 360;
+  const height = 220;
+  const padding = 28;
+  const samples = Array.from({ length: 121 }, (_, index) => -6 + index * 0.1);
+
+  function mapX(value: number) {
+    return padding + ((value + 6) / 12) * (width - padding * 2);
+  }
+
+  function mapY(value: number) {
+    return height - padding - (value / 1.2) * (height - padding * 2);
+  }
+
+  const sigmoidPath = samples
+    .map((value, index) => {
+      const y = 1 / (1 + Math.exp(-value));
+      return `${index === 0 ? 'M' : 'L'} ${mapX(value).toFixed(2)} ${mapY(y).toFixed(2)}`;
+    })
+    .join(' ');
+  const reluPath = samples
+    .map((value, index) => {
+      const y = Math.min(Math.max(0, value / 5), 1.2);
+      return `${index === 0 ? 'M' : 'L'} ${mapX(value).toFixed(2)} ${mapY(y).toFixed(2)}`;
+    })
+    .join(' ');
+
+  return (
+    <svg className="w-full rounded border border-line bg-zinc-950/80 p-3" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Sigmoid 和 ReLU 激活函数曲线">
+      <rect width={width} height={height} rx="14" fill="rgba(255,255,255,0.02)" />
+      {[-4, -2, 0, 2, 4].map((value) => (
+        <line key={value} x1={mapX(value)} x2={mapX(value)} y1={padding} y2={height - padding} stroke="rgba(255,255,255,0.07)" strokeDasharray="4 8" />
+      ))}
+      {[0, 0.5, 1].map((value) => (
+        <line key={value} x1={padding} x2={width - padding} y1={mapY(value)} y2={mapY(value)} stroke="rgba(255,255,255,0.07)" strokeDasharray="4 8" />
+      ))}
+      <line x1={padding} x2={width - padding} y1={mapY(0)} y2={mapY(0)} stroke="rgba(255,255,255,0.28)" />
+      <line x1={mapX(0)} x2={mapX(0)} y1={padding} y2={height - padding} stroke="rgba(255,255,255,0.28)" />
+      <path d={sigmoidPath} fill="none" stroke="#3dd6c6" strokeLinecap="round" strokeWidth="3" />
+      <path d={reluPath} fill="none" stroke="#f59e0b" strokeLinecap="round" strokeWidth="3" />
+      <text x={width - 94} y="38" fill="#3dd6c6" fontSize="12" fontWeight="700">Sigmoid</text>
+      <text x={width - 94} y="58" fill="#f59e0b" fontSize="12" fontWeight="700">ReLU</text>
+      <text x={width - 28} y={mapY(0) + 16} fill="rgba(255,255,255,0.5)" fontSize="11" textAnchor="end">x</text>
+      <text x={mapX(0) + 8} y="30" fill="rgba(255,255,255,0.5)" fontSize="11">y</text>
+      <text x={mapX(-6)} y={height - 8} fill="rgba(255,255,255,0.45)" fontSize="10">-6</text>
+      <text x={mapX(6)} y={height - 8} fill="rgba(255,255,255,0.45)" fontSize="10" textAnchor="end">6</text>
+    </svg>
+  );
+}
+
+function ActivationBoundarySketch() {
+  return (
+    <svg className="w-full rounded border border-line bg-zinc-950/80 p-3" viewBox="0 0 360 220" role="img" aria-label="线性叠加和非线性激活边界对比">
+      <rect width="360" height="220" rx="14" fill="rgba(255,255,255,0.02)" />
+      <text x="88" y="28" fill="#ffffff" fontSize="13" fontWeight="700" textAnchor="middle">没有激活</text>
+      <text x="270" y="28" fill="#ffffff" fontSize="13" fontWeight="700" textAnchor="middle">加入激活</text>
+      <rect x="25" y="45" width="126" height="126" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" />
+      <rect x="207" y="45" width="126" height="126" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.14)" />
+      <line x1="45" y1="142" x2="132" y2="74" stroke="#ffffff" strokeWidth="3" />
+      <path d="M 230 146 C 250 108, 270 112, 288 80 S 314 71, 321 102" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+      {[
+        [58, 78, '#3dd6c6'],
+        [83, 96, '#3dd6c6'],
+        [116, 134, '#f59e0b'],
+        [66, 136, '#f59e0b'],
+        [238, 78, '#3dd6c6'],
+        [269, 91, '#3dd6c6'],
+        [306, 138, '#f59e0b'],
+        [244, 139, '#f59e0b'],
+      ].map(([cx, cy, fill], index) => (
+        <circle key={index} cx={cx} cy={cy} r="7" fill={String(fill)} stroke="rgba(8,9,11,0.9)" strokeWidth="2" />
+      ))}
+      <text x="88" y="197" fill="rgba(255,255,255,0.58)" fontSize="12" textAnchor="middle">线性层叠仍是一条线</text>
+      <text x="270" y="197" fill="rgba(255,255,255,0.58)" fontSize="12" textAnchor="middle">非线性组合出弯折边界</text>
+    </svg>
+  );
+}
+
+function ActivationFunctionLab() {
+  return (
+    <div data-testid="activation-function-lab" className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="rounded border border-line bg-black/20 p-4">
+        <h4 className="text-base font-semibold text-white">为什么需要激活函数</h4>
+        <p className="mt-2 text-sm leading-6 text-zinc-300">
+          线性层做的是 y = Wx + b。多叠几层如果中间没有非线性，最后仍然可以合并成一个新的 W 和 b，本质还是一层线性模型。激活函数的作用，就是在每层之间加入“弯折”或“压缩”，让网络能表达曲线边界和复杂特征组合。
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <ActivationBoundarySketch />
+          <ActivationCurveChart />
+        </div>
+      </div>
+
+      <div className="rounded border border-line bg-black/20 p-4">
+        <h4 className="text-base font-semibold text-white">两个典型激活函数</h4>
+        <div className="mt-4 grid gap-3">
+          {activationCards.map((activation) => (
+            <div key={activation.name} className="rounded border border-line bg-zinc-950/70 p-3 text-sm leading-6 text-zinc-300">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                <span className="text-base font-semibold text-white">{activation.name}</span>
+                <span className="font-mono text-xs text-signal">{activation.formula}</span>
+              </div>
+              <p className="mt-2"><span className="font-semibold text-amber">场景：</span>{activation.scene}</p>
+              <p className="mt-1"><span className="font-semibold text-signal">优点：</span>{activation.pros}</p>
+              <p className="mt-1"><span className="font-semibold text-zinc-200">缺点：</span>{activation.cons}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 rounded border border-amber/50 bg-amber/10 p-3 text-sm leading-6 text-zinc-200">
+          讲述时可以先用 Sigmoid 说明“把分数压成概率”，再用 ReLU 说明现代深层网络为什么更偏爱简单、梯度稳定的隐藏层激活。
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function MultilayerBackpropLab() {
   const [isPopupBlocked, setIsPopupBlocked] = useState(false);
 
@@ -417,27 +558,54 @@ function TransformerArchitectureLab() {
       </div>
       <div className="rounded border border-line bg-black/20 p-4">
         <h4 className="text-base font-semibold text-white">Transformer 架构教学重绘</h4>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <div className="rounded border border-signal/60 bg-signal/10 p-3">
-            <div className="text-sm font-semibold text-white">Encoder</div>
-            <div className="mt-3 grid gap-2 text-sm text-zinc-200">
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Input Embedding</span>
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Positional Encoding</span>
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Multi-Head Self-Attention</span>
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Feed Forward</span>
-            </div>
-          </div>
-          <div className="rounded border border-amber/60 bg-amber/10 p-3">
-            <div className="text-sm font-semibold text-white">Decoder</div>
-            <div className="mt-3 grid gap-2 text-sm text-zinc-200">
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Output Embedding</span>
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Masked Self-Attention</span>
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Encoder-Decoder Attention</span>
-              <span className="rounded border border-line bg-black/20 px-3 py-2">Linear + Softmax</span>
-            </div>
-          </div>
-        </div>
-        <p className="mt-3 text-xs leading-5 text-zinc-500">参考论文：Attention Is All You Need, Figure 1 的编码器-解码器结构。</p>
+        <svg className="mt-4 w-full rounded border border-line bg-zinc-950/80 p-2" viewBox="0 0 600 430" role="img" aria-label="Attention Is All You Need Figure 1 风格架构图">
+          <defs>
+            <marker id="lab-transformer-arrow" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
+              <path d="M0,0 L8,4 L0,8 Z" fill="rgba(255,255,255,0.55)" />
+            </marker>
+          </defs>
+          <text x="150" y="32" fill="#ffffff" fontSize="18" fontWeight="700" textAnchor="middle">Encoder</text>
+          <text x="450" y="32" fill="#ffffff" fontSize="18" fontWeight="700" textAnchor="middle">Decoder</text>
+          <rect x="35" y="52" width="230" height="220" rx="12" fill="rgba(61,214,198,0.07)" stroke="rgba(61,214,198,0.42)" />
+          <rect x="335" y="52" width="230" height="300" rx="12" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.42)" />
+          {([
+            ['Feed Forward', 65, 80, 170, 42, 'rgba(61,214,198,0.14)'],
+            ['Add & Norm', 82, 130, 136, 30, 'rgba(255,255,255,0.08)'],
+            ['Multi-Head Attention', 65, 170, 170, 42, 'rgba(61,214,198,0.14)'],
+            ['Positional Encoding', 65, 300, 170, 34, 'rgba(61,214,198,0.12)'],
+            ['Input Embedding', 65, 350, 170, 34, 'rgba(61,214,198,0.12)'],
+            ['Linear + Softmax', 365, 70, 170, 42, 'rgba(255,255,255,0.1)'],
+            ['Feed Forward', 365, 130, 170, 42, 'rgba(245,158,11,0.14)'],
+            ['Encoder-Decoder Attention', 365, 190, 170, 42, 'rgba(245,158,11,0.14)'],
+            ['Masked Self-Attention', 365, 250, 170, 42, 'rgba(245,158,11,0.14)'],
+            ['Output Embedding', 365, 350, 170, 34, 'rgba(245,158,11,0.12)'],
+          ] as Array<[string, number, number, number, number, string]>).map(([label, x, y, width, height, fill]) => (
+            <g key={label}>
+              <rect x={x} y={y} width={width} height={height} rx="7" fill={fill} stroke="rgba(255,255,255,0.32)" />
+              <text x={Number(x) + Number(width) / 2} y={Number(y) + Number(height) / 2 + 5} fill="#ffffff" fontSize="12" fontWeight="700" textAnchor="middle">
+                {label}
+              </text>
+            </g>
+          ))}
+          {[
+            [150, 350, 150, 334],
+            [150, 300, 150, 212],
+            [150, 170, 150, 122],
+            [450, 350, 450, 292],
+            [450, 250, 450, 232],
+            [450, 190, 450, 172],
+            [450, 130, 450, 112],
+          ].map(([x1, y1, x2, y2]) => (
+            <line key={`${x1}-${y1}-${y2}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.48)" strokeWidth="2" markerEnd="url(#lab-transformer-arrow)" />
+          ))}
+          <line x1="235" y1="190" x2="365" y2="211" stroke="rgba(255,255,255,0.58)" strokeDasharray="7 7" strokeWidth="2" markerEnd="url(#lab-transformer-arrow)" />
+          <text x="300" y="185" fill="rgba(255,255,255,0.62)" fontSize="12" textAnchor="middle">memory</text>
+          <text x="40" y="288" fill="rgba(61,214,198,0.9)" fontSize="13" fontWeight="700">Nx</text>
+          <text x="340" y="48" fill="rgba(245,158,11,0.9)" fontSize="13" fontWeight="700">Nx</text>
+          <text x="150" y="412" fill="rgba(255,255,255,0.58)" fontSize="12" textAnchor="middle">Inputs</text>
+          <text x="450" y="412" fill="rgba(255,255,255,0.58)" fontSize="12" textAnchor="middle">Outputs shifted right</text>
+        </svg>
+        <p className="mt-3 text-xs leading-5 text-zinc-500">参考论文：Attention Is All You Need, Figure 1 的编码器-解码器结构。这里是教学重绘，用于讲清模块关系，不直接复用论文原图。</p>
       </div>
       <div className="rounded border border-line bg-black/20 p-4">
         <h4 className="text-base font-semibold text-white">模块作用</h4>
@@ -472,6 +640,10 @@ function renderLab(id: LabId) {
 
   if (id === 'perceptron-classification') {
     return <PerceptronClassificationLab />;
+  }
+
+  if (id === 'activation-functions') {
+    return <ActivationFunctionLab />;
   }
 
   if (id === 'multilayer-backprop') {
