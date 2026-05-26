@@ -26,13 +26,15 @@ interface PreviewImage {
   title: string;
 }
 
+const publicAssetUrl = (fileName: string) => `${import.meta.env.BASE_URL}${fileName}`;
+
 const claudeArchitectureModules: ArchitectureModule[] = [
   {
     id: 'claude-entry',
     step: '01',
     phase: '思考',
     title: 'Conversation Engine / QueryEngine',
-    imageSrc: '/claude-module-conversation-engine.png',
+    imageSrc: publicAssetUrl('claude-module-conversation-engine.png'),
     imageAlt: '核心模块 1：Conversation Engine / QueryEngine',
     summary: '它定义了 Agent 一轮完整思考是怎么跑完的。',
     overview:
@@ -55,7 +57,7 @@ const claudeArchitectureModules: ArchitectureModule[] = [
     step: '02',
     phase: '行动',
     title: 'Tool System + Tool Orchestration',
-    imageSrc: '/claude-module-tool-system.png',
+    imageSrc: publicAssetUrl('claude-module-tool-system.png'),
     imageAlt: '核心模块 2：Tool System + Tool Orchestration',
     summary: '它把“模型想做什么”变成“系统如何安全、可控地去做”。',
     overview:
@@ -78,7 +80,7 @@ const claudeArchitectureModules: ArchitectureModule[] = [
     step: '03',
     phase: '运行时',
     title: 'ToolUseContext + AppState',
-    imageSrc: '/claude-module-runtime-context.png',
+    imageSrc: publicAssetUrl('claude-module-runtime-context.png'),
     imageAlt: '核心模块 3：ToolUseContext + AppState',
     summary: '它让工具、会话、任务、界面共享同一套运行时事实。',
     overview:
@@ -101,7 +103,7 @@ const claudeArchitectureModules: ArchitectureModule[] = [
     step: '04',
     phase: '协作',
     title: 'Task / Subagent / Multi-Agent System',
-    imageSrc: '/claude-module-task-system.png',
+    imageSrc: publicAssetUrl('claude-module-task-system.png'),
     imageAlt: '核心模块 4：Task / Subagent / Multi-Agent System',
     summary: '它让 Agent 不再只是单线程对话助手，而是可拆解、可协作、可长期运行的系统。',
     overview:
@@ -124,7 +126,7 @@ const claudeArchitectureModules: ArchitectureModule[] = [
     step: '05',
     phase: '扩展',
     title: 'Extension Layer（Skills / Plugins / MCP）',
-    imageSrc: '/claude-module-extension-layer.png',
+    imageSrc: publicAssetUrl('claude-module-extension-layer.png'),
     imageAlt: '核心模块 5：Extension Layer（Skills / Plugins / MCP）',
     summary: '它让外部能力接入后仍然受统一治理，而不是把系统越扩越乱。',
     overview:
@@ -145,7 +147,7 @@ const claudeArchitectureModules: ArchitectureModule[] = [
 ];
 
 const overviewImage: PreviewImage = {
-  src: '/claude-code-architecture.png',
+  src: publicAssetUrl('claude-code-architecture.png'),
   alt: 'Claude Code 全局架构总览图',
   title: '全局架构图',
 };
